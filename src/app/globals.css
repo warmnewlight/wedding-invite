@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Swiper Arrow Customization */
+.swiper-button-next, .swiper-button-prev {
+  color: white !important;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.swiper-button-next:hover, .swiper-button-prev:hover {
+  opacity: 1;
+}
+
+/* Hide disabled arrows */
+.swiper-button-disabled {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* Envelope 3D Transforms */
+.transform-style-3d { transform-style: preserve-3d; }
+.rotate-x-180 { transform: rotateX(180deg); }
+.rotate-x-0 { transform: rotateX(0deg); }
