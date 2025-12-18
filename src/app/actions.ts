@@ -1,83 +1,91 @@
 'use server';
 
-import { base } from '../lib/airtable';
 import { revalidatePath } from 'next/cache';
+import { base } from '../lib/airtable';
 
-// 🟢 MAP YOUR EXACT AIRTABLE COLUMNS HERE
+// 🟢 THE TRANSLATION DICTIONARY
+// Left Side: Name coming from the Website Form (Your 'allowedEvents' strings)
+// Right Side: The exact word used in your Airtable Column Header
 const COLUMN_MAP: Record<string, string> = {
-  // Event Name in Code  :  Exact Column Name in Airtable
-  'Holy Matrimony':       'RSVP - Ceremony',
-  'Dinner Reception':     'RSVP - Reception',
-  'Indonesia Celebration': 'RSVP - Indo Celebration' // ⚠️ Check this full name in Airtable!
+  'Holy Matrimony': 'Ceremony',
+  'Dinner Reception': 'Reception',
+  'Indonesia Celebration': 'Indo Celebration'
 };
 
 export async function submitRSVP(formData: FormData) {
   const recordId = formData.get('recordId') as string;
+  
+  // 1. Get the general text fields
   const dietary = formData.get('dietary') as string;
 
   if (!recordId) return { success: false, message: 'Missing Record ID' };
 
-  const fieldsToUpdate: Record<string, string> = {
-    'Dietary Restrictions': dietary || '',
-    'RSVP Status': 'Responded' 
+  // 2. Prepare the data object for Airtable
+  // We start with the general columns
+  const fieldsToUpdate: Record<string, any> = {
+    'RSVP Status': 'Responded', // 🟢 AUTOMATED STATUS
+    'Dietary Requirements': dietary || '', // 🟢 MATCHING YOUR NAME
   };
 
-  const rsvpKeys = Array.from(formData.keys()).filter(k => k.startsWith('rsvp_'));
-
-  for (const key of rsvpKeys) {
-    const eventName = key.replace('rsvp_', '');
-    const status = formData.get(key) as string;
+  // 3. Loop through all form data to find the Events
+  // The form sends keys like "rsvp_Holy Matrimony"
+  // We need to convert them to "RSVP - Holy Matrimony"
+  for (const [key, value] of Array.from(formData.entries())) {
     
-    const adults = formData.get(`count_adults_${eventName}`);
-    const kids = formData.get(`count_kids_${eventName}`);
-
-    let finalValue = status;
-
-    if (status === 'Attending' && adults) {
-      let countString = `(${adults} Adults`;
-      if (kids && parseInt(kids as string) > 0) {
-        countString += `, ${kids} Kids`;
-      }
-      countString += ')';
-      finalValue = `${status} ${countString}`;
+    // Handle "RSVP - EventName"
+    if (key.startsWith('rsvp_')) {
+      const eventName = key.replace('rsvp_', ''); // Remove prefix
+      fieldsToUpdate[`RSVP - ${eventName}`] = value; // 🟢 CREATES "RSVP - Holy Matrimony"
     }
 
-    // FIND THE MATCHING COLUMN
-    const airtableColumnName = COLUMN_MAP[eventName];
-    
-    if (airtableColumnName) {
-      fieldsToUpdate[airtableColumnName] = finalValue;
-    } else {
-      console.warn(`⚠️ No column mapped for event: "${eventName}". Check actions.ts`);
+    // Handle "Adult Count - EventName"
+    if (key.startsWith('count_adults_')) {
+      const eventName = key.replace('count_adults_', '');
+      fieldsToUpdate[`Adult Count - ${eventName}`] = parseInt(value as string); // 🟢 CREATES "Adult Count - Holy Matrimony"
+    }
+
+    // Handle "Kids Count - EventName"
+    if (key.startsWith('count_kids_')) {
+      const eventName = key.replace('count_kids_', '');
+      fieldsToUpdate[`Kids Count - ${eventName}`] = parseInt(value as string); // 🟢 CREATES "Kids Count - Holy Matrimony"
     }
   }
 
   try {
-    await base('Guests').update([{ id: recordId, fields: fieldsToUpdate }]);
+    // 4. Send to Airtable
+    await base('Guests').update([{ 
+      id: recordId, 
+      fields: fieldsToUpdate 
+    }]);
+    
+    // 5. Refresh the page data
     revalidatePath('/');
     return { success: true };
+
   } catch (error) {
-    console.error('Airtable Update Failed:', error);
+    console.error('Failed to update RSVP:', error);
     return { success: false, message: 'Database Error' };
   }
 }
 
+// ---------------------------------------------------------
+// WISH ACTION (Keep this if you have the Wish form too)
+// ---------------------------------------------------------
 export async function submitWish(formData: FormData) {
   const recordId = formData.get('recordId') as string;
   const wish = formData.get('wish') as string;
 
-  if (!recordId) return { success: false, message: 'Missing Record ID' };
+  if (!recordId) return { success: false };
 
   try {
     await base('Guests').update([{ 
       id: recordId, 
       fields: { 'Wish': wish } 
     }]);
-    
     revalidatePath('/');
     return { success: true };
   } catch (error) {
     console.error('Failed to submit wish:', error);
-    return { success: false, message: 'Database Error' };
+    return { success: false };
   }
 }

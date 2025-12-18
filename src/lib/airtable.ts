@@ -11,6 +11,9 @@ export interface Guest {
   rsvpStatus: string;
   allowedEvents: string[]; // 🟢 NEW: Array of strings
   wish?: string; // 🟢 Added this
+  // 🟢 NEW FIELDS
+  maxAdults?: number; 
+  maxKids?: number;
 }
 
 export async function getGuestByCode(code: string): Promise<Guest | null> {
@@ -36,7 +39,9 @@ export async function getGuestByCode(code: string): Promise<Guest | null> {
       rsvpStatus: (record.get('RSVP Status') as string) || 'Pending',
       // 🟢 NEW: Fetch the multiselect field
       allowedEvents: (record.get('Allowed Events') as string[]) || [] ,
-      wish: (record.get('Wish') as string) || '' // 🟢 WE READ IT HERE
+      wish: (record.get('Wish') as string) || '', // 🟢 WE READ IT HERE
+      maxAdults: (record.get('Adult Count') as number) || 1, 
+      maxKids: (record.get('Kids Count') as number) || 0
     };
   } catch (error) {
     console.error('Error fetching guest:', error);

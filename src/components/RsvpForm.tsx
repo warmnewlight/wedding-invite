@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { submitRSVP } from '../app/actions';
+import { useSwiper } from 'swiper/react'; // 🟢 Import Swiper hook
 
 // 🟢 CONFIGURATION: Which events allow kids?
 const EVENTS_ALLOWING_KIDS = [
@@ -10,24 +11,67 @@ const EVENTS_ALLOWING_KIDS = [
   // 'Wedding Dinner' is NOT here, so it defaults to Adults only
 ];
 
+// 🟢 THE TRANSLATION DICTIONARY
+// Left Side: Name coming from the Website Form (Your 'allowedEvents' strings)
+// Right Side: The exact word used in your Airtable Column Header
+const DISPLAY_NAMES: Record<string, string> = {
+  'Holy Matrimony': 'Ceremony',
+  'Dinner Reception': 'Reception',
+  'Indonesia Celebration': 'Indo Celebration'
+};
+
 interface Props {
   guestId: string;
   allowedEvents: string[];
+  // 🟢 Receive limits
+  maxAdults: number;
+  maxKids: number;
 }
 
-export default function RsvpForm({ guestId, allowedEvents }: Props) {
+export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDone, setIsDone] = useState(false);
 
   // Local state to track acceptance so we can show/hide count inputs
   const [rsvps, setRsvps] = useState<Record<string, string>>({});
 
+  // 🟢 Swiper control to jump to Guestbook
+  const swiper = useSwiper(); 
+
   const handleStatusChange = (eventName: string, status: string) => {
     setRsvps(prev => ({ ...prev, [eventName]: status }));
   };
 
+  // 🟢 1. HELPER FUNCTION TO FORCE LIMITS
+  const enforceLimit = (e: React.ChangeEvent<HTMLInputElement>, max: number, min: number) => {
+    let val = parseInt(e.target.value);
+    // If they delete the number (NaN), let them, but don't crash
+    if (isNaN(val)) return;
+
+    // The Bouncer Logic
+    if (val > max) {
+      e.target.value = max.toString();
+    } else if (val < min) {
+      e.target.value = min.toString();
+    }
+  };
+
+  // 🟢 SUCCESS SCREEN WITH "NEXT STEP"
   if (isDone) {
-    return <div className="text-green-400 text-xl font-serif animate-pulse">Thank you for your response!</div>;
+    return (
+      <div className="flex flex-col items-center gap-6 animate-fade-in">
+        <div className="text-green-400 text-xl font-serif">Response Saved!</div>
+        <p className="text-sm text-gray-400 max-w-xs text-center">
+          We have received your RSVP. While you are here, leave a message for the couple?
+        </p>
+        <button 
+          onClick={() => swiper.slideNext()} // 🟢 Jumps to next slide (Guestbook)
+          className="bg-[#d4af37] text-black px-6 py-3 rounded uppercase font-bold text-xs tracking-widest hover:bg-white transition-all"
+        >
+          Sign Guestbook
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -48,8 +92,11 @@ export default function RsvpForm({ guestId, allowedEvents }: Props) {
           const status = rsvps[eventName];
 
           return (
-            <div key={eventName} className="bg-white/95 p-4 rounded-lg shadow-lg">
-              <p className="font-serif font-bold text-lg mb-2 text-center text-[#2c2c2c]">{eventName}</p>
+        <div key={eventName} className="bg-white/95 p-4 rounded-lg shadow-lg">
+          {/* 🟢 2. CHANGE THIS LINE: Use the mapped name, or fallback to the original */}
+          <p className="font-serif font-bold text-lg mb-2 text-center text-[#2c2c2c]">
+            {DISPLAY_NAMES[eventName] || eventName}
+          </p>
               
               {/* STATUS TOGGLE */}
               <div className="flex gap-2 justify-center mb-3">
@@ -91,7 +138,9 @@ export default function RsvpForm({ guestId, allowedEvents }: Props) {
                         type="number" 
                         name={`count_adults_${eventName}`} 
                         min="1" 
-                        defaultValue="1" 
+                        max={maxAdults} // 🟢 ENFORCED LIMIT
+                        defaultValue={maxAdults} 
+                        onChange={(e) => enforceLimit(e, maxAdults, 1)}
                         className="w-full p-2 border border-gray-300 rounded text-center font-bold"
                       />
                     </div>
@@ -104,7 +153,9 @@ export default function RsvpForm({ guestId, allowedEvents }: Props) {
                           type="number" 
                           name={`count_kids_${eventName}`} 
                           min="0" 
-                          defaultValue="0" 
+                          max={maxKids} // 🟢 ENFORCED LIMIT
+                          defaultValue={maxKids} 
+                          onChange={(e) => enforceLimit(e, maxKids, 0)}
                           className="w-full p-2 border border-gray-300 rounded text-center font-bold"
                         />
                       </div>

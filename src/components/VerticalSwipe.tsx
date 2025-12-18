@@ -14,6 +14,8 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import '../app/globals.css';
 
+const DEFAULT_EVENTS = ['Holy Matrimony'];
+
 // --- COUNTDOWN COMPONENT ---
 function Countdown() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -48,7 +50,36 @@ function Countdown() {
 // 🟢 UPDATED WISHES FORM
 function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { name: string, message: string }[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSent, setIsSent] = useState(false); // New success state
+  const [isSent, setIsSent] = useState(false);
+  const [wishText, setWishText] = useState(guest?.wish || '');
+
+  useEffect(() => {
+    if (guest?.wish) setWishText(guest.wish);
+  }, [guest?.wish]);
+
+  // If Generic Guest (No Guest ID), show READ ONLY mode
+  if (!guest) {
+    return (
+      <div className="w-full max-w-md flex flex-col gap-4 h-full pb-32">
+        <div className="bg-white/10 p-6 rounded-lg text-center mb-4">
+           <p className="text-sm text-gray-300 italic">"Join us in celebrating our special day."</p>
+        </div>
+        <h3 className="text-[#d4af37] text-xs uppercase tracking-widest text-center mb-2">Guestbook Messages</h3>
+        
+        {/* Wall of Love (Copy of the list below) */}
+        <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-left border-t border-white/10 pt-4 swiper-no-swiping">
+           {allWishes.length === 0 ? <p className="text-gray-500 text-center">No messages yet.</p> : (
+             allWishes.map((w, i) => (
+               <div key={i} className="bg-white/5 p-4 rounded border border-white/10">
+                 <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
+                 <p className="text-[10px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
+               </div>
+             ))
+           )}
+        </div>
+      </div>
+    );
+  }
   
   const initialWish = guest?.wish || '';
 
@@ -96,9 +127,24 @@ function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { na
         />
         <button 
           disabled={isSubmitting}
-          className="bg-white text-black py-3 rounded uppercase font-bold tracking-widest hover:bg-gray-200 disabled:opacity-50 transition-all"
+          className={`w-full py-4 rounded uppercase font-bold tracking-widest transition-all flex items-center justify-center gap-2
+            ${isSubmitting 
+              ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+              : 'bg-white text-black hover:bg-gray-200'
+            }`}
         >
-          {isSubmitting ? 'Posting...' : (initialWish ? 'Update Message' : 'Post to Guestbook')}
+          {isSubmitting ? (
+            <>
+              {/* Simple CSS Spinner */}
+              <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Saving...</span>
+            </>
+          ) : (
+            initialWish ? 'Update Message' : 'Post to Guestbook'
+          )}
         </button>
       </form>
 
@@ -121,6 +167,8 @@ function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { na
     </div>
   );
 }
+
+
 
 // --- DYNAMIC FAQ LOGIC ---
 const getFaqs = (allowedEvents: string[]) => {
@@ -150,7 +198,10 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
   const [isOpening, setIsOpening] = useState(false);
   const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
 
-  const currentFaqs = guest ? getFaqs(guest.allowedEvents) : [];
+const eventsToShow = guest ? guest.allowedEvents : DEFAULT_EVENTS;
+  
+  // Use eventsToShow for FAQ generation too
+  const currentFaqs = getFaqs(eventsToShow);
 
   const handleOpenEnvelope = () => {
     if (isOpening) return; 
@@ -199,7 +250,7 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
                   </div>
               </div>
               <div className={`absolute bottom-[5%] left-0 w-full text-center z-40 transition-opacity duration-500 ${isOpening ? 'opacity-0' : 'opacity-100'}`}>
-                <p className="font-serif italic text-stone-600 text-xl md:text-2xl drop-shadow-sm px-4">{guest ? guest.name : 'The Guest'}</p>
+                <p className="font-serif italic text-stone-600 text-xl md:text-2xl drop-shadow-sm px-4">{guest ? guest.name : 'Family & Friends'}</p>
                 <p className="text-[10px] text-stone-400 mt-2 animate-pulse">Tap to view</p>
               </div>
           </div>
@@ -256,7 +307,8 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
            <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
              <h2 className="text-4xl mb-8 font-serif" data-swiper-parallax="-300">The Schedule</h2>
              <div data-swiper-parallax="-200">
-                {guest ? <EventTimeline events={guest.allowedEvents} /> : <p>Loading...</p>}
+                {/* 🟢 FIX: Remove the ternary check, just render EventTimeline */}
+                <EventTimeline events={eventsToShow} />
              </div>
            </div>
         </SwiperSlide>
@@ -284,9 +336,18 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
             <h2 className="text-4xl mb-6 font-serif" data-swiper-parallax="-300">RSVP</h2>
             {guest ? (
                <div className="w-full flex justify-center" data-swiper-parallax="-200">
-                  <RsvpForm guestId={guest.recordId} allowedEvents={guest.allowedEvents} />
+                  <RsvpForm guestId={guest.recordId} allowedEvents={guest.allowedEvents} // 🟢 PASS LIMITS
+                  maxAdults={guest.maxAdults || 1} 
+                  maxKids={guest.maxKids || 0}/>
                </div>
-            ) : null}
+            ) : (
+               <div className="bg-white/10 p-8 rounded-lg border border-white/20 backdrop-blur-sm max-w-md mx-auto">
+                 <p className="text-lg font-serif mb-4">Registration Closed</p>
+                 <p className="text-sm text-gray-300">
+                   For RSVP inquiries or updates, please contact the couple directly.
+                 </p>
+               </div>
+            )}
           </div>
         </SwiperSlide>
 
