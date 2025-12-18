@@ -61,3 +61,23 @@ export async function submitRSVP(formData: FormData) {
     return { success: false, message: 'Database Error' };
   }
 }
+
+export async function submitWish(formData: FormData) {
+  const recordId = formData.get('recordId') as string;
+  const wish = formData.get('wish') as string;
+
+  if (!recordId) return { success: false, message: 'Missing Record ID' };
+
+  try {
+    await base('Guests').update([{ 
+      id: recordId, 
+      fields: { 'Wish': wish } 
+    }]);
+    
+    revalidatePath('/');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to submit wish:', error);
+    return { success: false, message: 'Database Error' };
+  }
+}

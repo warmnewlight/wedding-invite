@@ -1,5 +1,9 @@
 import VerticalSwipe from '../components/VerticalSwipe';
 import { getGuestByCode } from '../lib/airtable';
+import { getWishes } from '../lib/airtable'; // 🟢 Import getWishes
+
+// 🟢 ADD THIS LINE HERE:
+export const revalidate = 0;
 
 export default async function Home({
   searchParams,
@@ -18,9 +22,9 @@ export default async function Home({
 
   console.log("Found Guest:", guest);
 
-  return (
-    <main>
-      <VerticalSwipe guest={guest} />
-    </main>
-  );
+  // 🟢 Fetch all public wishes
+  const publicWishes = await getWishes();
+
+  // 🟢 Pass them to the component
+  return <VerticalSwipe guest={guest} publicWishes={publicWishes} />;
 }

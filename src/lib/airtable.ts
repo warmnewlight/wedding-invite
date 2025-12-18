@@ -1,12 +1,8 @@
 // src/lib/airtable.ts
 import Airtable from 'airtable';
 
-// 🟢 Add 'export' before const base
-export const base = new Airtable({ apiKey: process.env.AIRTABLE_API_TOKEN }).base(
-  process.env.AIRTABLE_BASE_ID!
-);
-
-// ... rest of the file stays the same
+// ... (Your existing config) ...
+export const base = new Airtable({ apiKey: process.env.AIRTABLE_API_TOKEN }).base(process.env.AIRTABLE_BASE_ID!);
 
 export interface Guest {
   recordId: string;
@@ -14,6 +10,7 @@ export interface Guest {
   name: string;
   rsvpStatus: string;
   allowedEvents: string[]; // 🟢 NEW: Array of strings
+  wish?: string; // 🟢 Added this
 }
 
 export async function getGuestByCode(code: string): Promise<Guest | null> {
@@ -38,7 +35,8 @@ export async function getGuestByCode(code: string): Promise<Guest | null> {
       name: greetingName || technicalName,
       rsvpStatus: (record.get('RSVP Status') as string) || 'Pending',
       // 🟢 NEW: Fetch the multiselect field
-      allowedEvents: (record.get('Allowed Events') as string[]) || [] 
+      allowedEvents: (record.get('Allowed Events') as string[]) || [] ,
+      wish: (record.get('Wish') as string) || '' // 🟢 WE READ IT HERE
     };
   } catch (error) {
     console.error('Error fetching guest:', error);
@@ -71,5 +69,30 @@ export async function updateGuestRSVP(
     // 🔴 THIS IS THE IMPORTANT PART
     console.error('Airtable Update Failed:', error);
     return { success: false };
+  }
+}
+
+export async function getWishes() {
+  try {
+    const records = await base('Guests').select({
+      filterByFormula: "NOT({Wish} = '')",
+      // 🟢 1. Request the new 'Wish Time' column
+      fields: ['Guest', 'Wish', 'Wish Time'], 
+      
+      // 🟢 2. Sort by 'Wish Time' DESC (Newest Updates First)
+      sort: [{ field: 'Wish Time', direction: 'desc' }] 
+    }).all();
+
+    const wishes = records.map(record => ({
+      name: record.get('Guest') as string,
+      message: record.get('Wish') as string,
+    }));
+    
+    // Returns newest first
+    return wishes;
+
+  } catch (error: any) {
+    console.error('❌ AIRTABLE ERROR:', error.statusCode, error.message);
+    return [];
   }
 }

@@ -7,53 +7,14 @@ import type { Swiper as SwiperType } from 'swiper';
 import { Guest } from '../lib/airtable';
 import EventTimeline from './EventTimeline';
 import RsvpForm from './RsvpForm';
+import { submitWish } from '../app/actions';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import '../app/globals.css';
 
-// --- DYNAMIC FAQ LOGIC ---
-const getFaqs = (allowedEvents: string[]) => {
-  const faqs = [];
-
-  // 1. GLOBAL FAQS (Always show)
-  faqs.push({
-    q: "Is there a dress code?",
-    a: "Yes, strictly Black Tie. Please dress to impress!"
-  });
-
-  // 2. EVENT SPECIFIC FAQS
-  if (allowedEvents.includes('Holy Matrimony')) {
-    faqs.push({
-      q: "Where do I park for the Ceremony?",
-      a: "Limited parking is available at St. Mary's Cathedral. We recommend arriving 15 minutes early."
-    });
-  }
-
-  // 🟢 RENAMED HERE
-  if (allowedEvents.includes('Dinner Reception')) {
-    faqs.push({
-      q: "Where do I park for the Reception?",
-      a: "Valet parking is available at the Grand Ballroom entrance."
-    });
-    // Specific rule for Dinner
-    faqs.push({
-      q: "Are kids invited to the Dinner?",
-      a: "We love your little ones, but the Dinner Reception is an adults-only affair."
-    });
-  }
-
-  if (allowedEvents.includes('Indonesia Celebration')) {
-    faqs.push({
-      q: "Do I need a Visa for Jakarta?",
-      a: "Please check your local embassy requirements. Most guests can get a Visa on Arrival."
-    });
-  }
-
-  return faqs;
-};
-
+// --- COUNTDOWN COMPONENT ---
 function Countdown() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   useEffect(() => {
@@ -83,27 +44,112 @@ function Countdown() {
   );
 }
 
-function WishesForm() {
-  const [sent, setSent] = useState(false);
-  if (sent) return <div className="text-xl italic">Thank you for your warm wishes!</div>;
+// --- WISHES FORM COMPONENT (FIXED DEFINITION) ---
+// 🟢 UPDATED WISHES FORM
+function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { name: string, message: string }[] }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSent, setIsSent] = useState(false); // New success state
+  
+  const initialWish = guest?.wish || '';
+
+  // If we just sent a message, show the success screen temporarily
+  if (isSent) {
+    return (
+      <div className="w-full max-w-md h-full flex flex-col items-center justify-center animate-fade-in">
+        <div className="bg-white/10 p-6 rounded-full mb-4 text-[#d4af37]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </div>
+        <h3 className="text-2xl font-serif text-white mb-2">Message Posted!</h3>
+        <button 
+          onClick={() => setIsSent(false)}
+          className="text-sm text-gray-400 hover:text-white underline"
+        >
+          Write another?
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <form onSubmit={(e) => { e.preventDefault(); setSent(true); }} className="w-full max-w-md flex flex-col gap-4">
-      <textarea className="w-full p-4 rounded bg-white/10 border border-white/30 text-white placeholder:text-gray-400 min-h-[120px]" placeholder="Leave a message for the couple..." required />
-      <button className="bg-white text-black py-3 rounded uppercase font-bold tracking-widest hover:bg-gray-200">Post Wish</button>
-    </form>
+    <div className="w-full max-w-md flex flex-col gap-8 h-full">
+      
+      {/* FORM SECTION */}
+      {/* 🟢 Added 'swiper-no-swiping' to prevent drag interference */}
+      <form 
+        action={async (formData) => {
+          setIsSubmitting(true);
+          await submitWish(formData);
+          setIsSubmitting(false);
+          setIsSent(true); // Show success message
+        }} 
+        className="w-full flex flex-col gap-4 shrink-0 swiper-no-swiping"
+      >
+        <input type="hidden" name="recordId" value={guest?.recordId || ''} />
+        <textarea 
+          name="wish"
+          className="w-full p-4 rounded bg-white/10 border border-white/30 text-white placeholder:text-gray-400 min-h-[100px] focus:outline-none focus:border-[#d4af37] transition-colors" 
+          placeholder="Leave a note for the couple..." 
+          defaultValue={initialWish}
+          required 
+        />
+        <button 
+          disabled={isSubmitting}
+          className="bg-white text-black py-3 rounded uppercase font-bold tracking-widest hover:bg-gray-200 disabled:opacity-50 transition-all"
+        >
+          {isSubmitting ? 'Posting...' : (initialWish ? 'Update Message' : 'Post to Guestbook')}
+        </button>
+      </form>
+
+      {/* WALL OF LOVE */}
+      {/* 🟢 CHANGE: Added 'pb-32' to the end of this class list */}
+      <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-left border-t border-white/10 pt-4 swiper-no-swiping pb-32">
+        <h3 className="text-[#d4af37] text-xs uppercase tracking-widest text-center mb-4">Latest Wishes</h3>
+        
+        {allWishes.length === 0 ? (
+          <p className="text-gray-500 text-center text-sm italic">Be the first to leave a wish!</p>
+        ) : (
+          allWishes.map((w, i) => (
+            <div key={i} className="bg-white/5 p-4 rounded border border-white/10">
+              <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
+              <p className="text-[10px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }
 
+// --- DYNAMIC FAQ LOGIC ---
+const getFaqs = (allowedEvents: string[]) => {
+  const faqs = [];
+  faqs.push({ q: "Is there a dress code?", a: "Yes, strictly Black Tie. Please dress to impress!" });
+
+  if (allowedEvents.includes('Holy Matrimony')) {
+    faqs.push({ q: "Where do I park for the Ceremony?", a: "Limited parking is available at St. Mary's Cathedral. We recommend arriving 15 minutes early." });
+  }
+
+  if (allowedEvents.includes('Dinner Reception')) {
+    faqs.push({ q: "Where do I park for the Reception?", a: "Valet parking is available at the Grand Ballroom entrance." });
+    faqs.push({ q: "Are kids invited to the Dinner?", a: "We love your little ones, but the Dinner Reception is an adults-only affair." });
+  }
+
+  return faqs;
+};
+
+// --- MAIN COMPONENT ---
 interface Props {
   guest: Guest | null;
+  publicWishes: { name: string, message: string }[];
 }
 
-export default function VerticalSwipe({ guest }: Props) {
+export default function VerticalSwipe({ guest, publicWishes }: Props) {
   const [showEnvelope, setShowEnvelope] = useState(true);
   const [isOpening, setIsOpening] = useState(false);
   const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
 
-  // 🟢 GENERATE FAQS BASED ON GUEST
   const currentFaqs = guest ? getFaqs(guest.allowedEvents) : [];
 
   const handleOpenEnvelope = () => {
@@ -244,13 +290,17 @@ export default function VerticalSwipe({ guest }: Props) {
           </div>
         </SwiperSlide>
 
-        {/* SLIDE 7: WISHES */}
+        {/* SLIDE 7: WISHES (UPDATED) */}
         <SwiperSlide className="relative overflow-hidden bg-[#1a1a1a]">
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(/photos/wish.jpg)' }} data-swiper-parallax="-50%"><div className="absolute inset-0 bg-black/70"></div></div>
-           <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(/photos/wish.jpg)' }} data-swiper-parallax="-50%">
+             <div className="absolute inset-0 bg-black/70"></div>
+           </div>
+           {/* Added h-full and py-20 to ensure scrolling fits */}
+           <div className="absolute inset-0 flex flex-col items-center justify-start pt-24 pb-10 px-6 text-center">
               <h2 className="text-4xl font-serif mb-2">Guestbook</h2>
-              <p className="text-sm text-gray-400 mb-8">Leave a note for the couple to read later.</p>
-              <WishesForm />
+              <p className="text-sm text-gray-400 mb-6">Leave a note for the couple.</p>
+              {/* 🟢 PASS THE DATA */}
+              <WishesForm guest={guest} allWishes={publicWishes} />
            </div>
         </SwiperSlide>
 
