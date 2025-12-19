@@ -82,13 +82,13 @@ export async function getWishes() {
     const records = await base('Guests').select({
       filterByFormula: "NOT({Wish} = '')",
       // 🟢 FETCH GREETING NAME TOO
-      fields: ['Guest Name', 'Greeting Name', 'Wish', 'Wish Time'], 
+      fields: ['Guest', 'Greeting Name', 'Wish', 'Wish Time'], 
       sort: [{ field: 'Wish Time', direction: 'desc' }] 
     }).all();
 
     const wishes = records.map(record => ({
       // 🟢 LOGIC: Use Greeting Name if it exists, otherwise Guest Name
-      name: (record.get('Greeting Name') as string) || (record.get('Guest Name') as string),
+      name: (record.get('Greeting Name') as string) || (record.get('Guest') as string),
       message: record.get('Wish') as string,
     }));
     
