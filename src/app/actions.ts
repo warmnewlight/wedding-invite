@@ -3,14 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { base } from '../lib/airtable';
 
-// 🟢 THE TRANSLATION DICTIONARY
-// Left Side: Name coming from the Website Form (Your 'allowedEvents' strings)
-// Right Side: The exact word used in your Airtable Column Header
-const COLUMN_MAP: Record<string, string> = {
-  'Holy Matrimony': 'Ceremony',
-  'Dinner Reception': 'Reception',
-  'Indonesia Celebration': 'Indo Celebration'
-};
 
 export async function submitRSVP(formData: FormData) {
   const recordId = formData.get('recordId') as string;

@@ -11,14 +11,6 @@ const EVENTS_ALLOWING_KIDS = [
   // 'Wedding Dinner' is NOT here, so it defaults to Adults only
 ];
 
-// 🟢 THE TRANSLATION DICTIONARY
-// Left Side: Name coming from the Website Form (Your 'allowedEvents' strings)
-// Right Side: The exact word used in your Airtable Column Header
-const DISPLAY_NAMES: Record<string, string> = {
-  'Holy Matrimony': 'Ceremony',
-  'Dinner Reception': 'Reception',
-  'Indonesia Celebration': 'Indo Celebration'
-};
 
 interface Props {
   guestId: string;
@@ -92,11 +84,8 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
           const status = rsvps[eventName];
 
           return (
-        <div key={eventName} className="bg-white/95 p-4 rounded-lg shadow-lg">
-          {/* 🟢 2. CHANGE THIS LINE: Use the mapped name, or fallback to the original */}
-          <p className="font-serif font-bold text-lg mb-2 text-center text-[#2c2c2c]">
-            {DISPLAY_NAMES[eventName] || eventName}
-          </p>
+            <div key={eventName} className="bg-white/95 p-4 rounded-lg shadow-lg">
+              <p className="font-serif font-bold text-lg mb-2 text-center text-[#2c2c2c]">{eventName}</p>
               
               {/* STATUS TOGGLE */}
               <div className="flex gap-2 justify-center mb-3">

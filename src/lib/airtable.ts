@@ -81,19 +81,17 @@ export async function getWishes() {
   try {
     const records = await base('Guests').select({
       filterByFormula: "NOT({Wish} = '')",
-      // 🟢 1. Request the new 'Wish Time' column
-      fields: ['Guest', 'Wish', 'Wish Time'], 
-      
-      // 🟢 2. Sort by 'Wish Time' DESC (Newest Updates First)
+      // 🟢 FETCH GREETING NAME TOO
+      fields: ['Guest Name', 'Greeting Name', 'Wish', 'Wish Time'], 
       sort: [{ field: 'Wish Time', direction: 'desc' }] 
     }).all();
 
     const wishes = records.map(record => ({
-      name: record.get('Guest') as string,
+      // 🟢 LOGIC: Use Greeting Name if it exists, otherwise Guest Name
+      name: (record.get('Greeting Name') as string) || (record.get('Guest Name') as string),
       message: record.get('Wish') as string,
     }));
     
-    // Returns newest first
     return wishes;
 
   } catch (error: any) {

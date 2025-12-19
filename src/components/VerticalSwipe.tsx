@@ -14,8 +14,6 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import '../app/globals.css';
 
-const DEFAULT_EVENTS = ['Holy Matrimony'];
-
 // --- COUNTDOWN COMPONENT ---
 function Countdown() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -197,11 +195,10 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
   const [showEnvelope, setShowEnvelope] = useState(true);
   const [isOpening, setIsOpening] = useState(false);
   const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
-
-const eventsToShow = guest ? guest.allowedEvents : DEFAULT_EVENTS;
   
-  // Use eventsToShow for FAQ generation too
-  const currentFaqs = getFaqs(eventsToShow);
+  // 🟢 UPDATE: No default events. If guest is null, this is empty.
+  const eventsToShow = guest ? guest.allowedEvents : [];
+  const currentFaqs = guest ? getFaqs(eventsToShow) : [];
 
   const handleOpenEnvelope = () => {
     if (isOpening) return; 
@@ -218,7 +215,10 @@ const eventsToShow = guest ? guest.allowedEvents : DEFAULT_EVENTS;
       
       {!showEnvelope && (
         <button onClick={handleBackToTop} className="absolute bottom-6 right-6 z-50 w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white/70 hover:bg-white/20 transition-all shadow-lg animate-fade-in">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>
+          {/* Use a Home Icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>        
         </button>
       )}
 
@@ -301,7 +301,8 @@ const eventsToShow = guest ? guest.allowedEvents : DEFAULT_EVENTS;
            </div>
         </SwiperSlide>
 
-        {/* SLIDE 4: SCHEDULE */}
+        {/* 🟢 SLIDE 4: SCHEDULE (HIDDEN for generic guests) */}
+        {guest && (
         <SwiperSlide className="relative overflow-hidden bg-black">
            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(/photos/lights.jpg)' }} data-swiper-parallax="-50%"><div className="absolute inset-0 bg-black/70"></div></div>
            <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
@@ -312,9 +313,11 @@ const eventsToShow = guest ? guest.allowedEvents : DEFAULT_EVENTS;
              </div>
            </div>
         </SwiperSlide>
+        )}
 
-        {/* 🟢 SLIDE 5: DYNAMIC FAQ */}
-        <SwiperSlide className="relative overflow-hidden bg-[#111]">
+        {/* 🟢 SLIDE 5: FAQ (HIDDEN for generic guests) */}
+        {/* If they aren't invited to events, they don't need parking/dress code info */}
+        {guest && (        <SwiperSlide className="relative overflow-hidden bg-[#111]">
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(/photos/faq.jpg)' }} data-swiper-parallax="-50%"><div className="absolute inset-0 bg-black/80"></div></div>
            <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center overflow-y-auto py-20">
              <h2 className="text-4xl font-serif mb-12">F.A.Q.</h2>
@@ -328,8 +331,11 @@ const eventsToShow = guest ? guest.allowedEvents : DEFAULT_EVENTS;
              </div>
            </div>
         </SwiperSlide>
+        )}
 
-        {/* SLIDE 6: RSVP */}
+        {/* 🟢 SLIDE 6: RSVP (HIDDEN for generic guests) */}
+        {/* Since they can't RSVP, let's just hide this slide entirely instead of showing "Registration Closed" */}
+        {guest && (
         <SwiperSlide className="relative overflow-hidden bg-black">
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(/photos/rsvp.jpg)' }} data-swiper-parallax="-50%"><div className="absolute inset-0 bg-black/80"></div></div>
           <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6 w-full overflow-y-auto py-20">
@@ -350,6 +356,7 @@ const eventsToShow = guest ? guest.allowedEvents : DEFAULT_EVENTS;
             )}
           </div>
         </SwiperSlide>
+        )}
 
         {/* SLIDE 7: WISHES (UPDATED) */}
         <SwiperSlide className="relative overflow-hidden bg-[#1a1a1a]">
@@ -372,10 +379,23 @@ const eventsToShow = guest ? guest.allowedEvents : DEFAULT_EVENTS;
            </div>
            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
               <h2 className="text-3xl font-serif mb-6">Watch Live</h2>
-              <div className="w-full max-w-2xl aspect-video bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700">
-                 <p className="text-gray-400">Livestream Player will appear here on the day.</p>
+              {/* THE YOUTUBE PLAYER */}
+              <div className="w-full max-w-3xl aspect-video bg-black shadow-2xl border border-white/10 rounded-lg overflow-hidden">
+                <iframe 
+                  className="w-full h-full"
+                  // 🟢 REPLACE 'YOUR_VIDEO_ID' WITH YOUR ACTUAL ID
+                  // Example: https://www.youtube.com/embed/dQw4w9WgXcQ
+                  src="https://www.youtube.com/embed/X9Pi1wmQGU0" 
+                  title="Wedding Livestream"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                ></iframe>
               </div>
-           </div>
+
+              <p className="text-gray-400 text-sm mt-6 px-6 text-center">
+                The stream will begin on September 19, 2026 at 11:00 AM.
+              </p>
+            </div>
         </SwiperSlide>
 
         {/* SLIDE 9: THANK YOU */}
