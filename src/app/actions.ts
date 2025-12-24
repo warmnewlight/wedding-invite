@@ -81,3 +81,23 @@ export async function submitWish(formData: FormData) {
     return { success: false };
   }
 }
+
+// src/app/actions.ts
+
+export async function markGuestAsOpened(recordId: string) {
+  if (!recordId) return;
+
+  try {
+    // We update the 'Has Opened' checkbox to true
+    // (Optional: You can also save the time: 'Opened At': new Date().toISOString())
+    await base('Guests').update([{ 
+      id: recordId, 
+      fields: { 
+        'Has Opened': true 
+      } 
+    }]);
+  } catch (error) {
+    // If this fails, fails silently. It's not worth crashing the site for.
+    console.error('Failed to track open:', error);
+  }
+}

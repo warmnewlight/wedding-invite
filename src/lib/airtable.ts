@@ -6,6 +6,7 @@ export const base = new Airtable({ apiKey: process.env.AIRTABLE_API_TOKEN }).bas
 
 export interface Guest {
   recordId: string;
+  group: string;
   id: string;
   name: string;
   rsvpStatus: string;
@@ -41,7 +42,8 @@ export async function getGuestByCode(code: string): Promise<Guest | null> {
       allowedEvents: (record.get('Allowed Events') as string[]) || [] ,
       wish: (record.get('Wish') as string) || '', // 🟢 WE READ IT HERE
       maxAdults: (record.get('Adult Count') as number) || 1, 
-      maxKids: (record.get('Kids Count') as number) || 0
+      maxKids: (record.get('Kids Count') as number) || 0,
+      group: (record.get('Group') as string)
     };
   } catch (error) {
     console.error('Error fetching guest:', error);
