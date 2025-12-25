@@ -8,7 +8,6 @@ import { Guest } from '../lib/airtable';
 import EventTimeline from './EventTimeline';
 import RsvpForm from './RsvpForm';
 import { submitWish } from '../app/actions';
-import { markGuestAsOpened } from '../app/actions';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -167,61 +166,12 @@ function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { na
   );
 }
 
-// Profile
-interface ProfileData {
-  id: string;
-  name: string;
-  relationLabel: string; // "Son of" or "Daughter of"
-  parents: string;       // "John & Jane Doe"
-  quote: string;
-  image: string;
-}
 
-const profiles: ProfileData[] = [
-  {
-    id: 'daniel',
-    name: 'Daniel',
-    relationLabel: 'Son of',
-    parents: 'Robert & Sarah Thompson',
-    quote: '"The calm in the storm (usually)."',
-    image: '/photos/daniel.jpg',
-  },
-  {
-    id: 'alicia',
-    name: 'Alicia',
-    relationLabel: 'Daughter of',
-    parents: 'Michael & Elizabeth Chen',
-    quote: '"The one who brings the chaos and the coffee."',
-    image: '/photos/alicia.jpg',
-  }
-];
 
 // --- DYNAMIC FAQ LOGIC ---
-const getFaqs = (allowedEvents: string[], group: string) => {
+const getFaqs = (allowedEvents: string[]) => {
   const faqs = [];
-
-  // --- DRESS CODE LOGIC ---
-  // Check if the group matches specific roles
-  if (['Bridesmaids', 'Groomsmen'].includes(group)) {
-    faqs.push({ 
-      q: "What is my attire?", 
-      a: "Please refer to the chat/email for your specific outfit details and fitting schedule." 
-    });
-  } 
-  else if (group === 'Family') {
-    faqs.push({ 
-      q: "What is the family dress code?", 
-      a: "Formal attire. Please ensure you are ready for family photos 30 mins before the ceremony." 
-    });
-  } 
-  else {
-    // Default for everyone else (Standard Guests)
-    faqs.push({ 
-      q: "Is there a dress code?", 
-      a: "Yes, strictly Black Tie. Please dress to impress!" 
-    });
-  }
-  
+  faqs.push({ q: "Is there a dress code?", a: "Yes, strictly Black Tie. Please dress to impress!" });
 
   if (allowedEvents.includes('Holy Matrimony')) {
     faqs.push({ q: "Where do I park for the Ceremony?", a: "Limited parking is available at St. Mary's Cathedral. We recommend arriving 15 minutes early." });
@@ -248,21 +198,13 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
   
   // 🟢 UPDATE: No default events. If guest is null, this is empty.
   const eventsToShow = guest ? guest.allowedEvents : [];
-  const currentFaqs = guest ? getFaqs(eventsToShow,guest.group) : [];
+  const currentFaqs = guest ? getFaqs(eventsToShow) : [];
 
   const handleOpenEnvelope = () => {
     if (isOpening) return; 
     setIsOpening(true);
     setTimeout(() => { setShowEnvelope(false); }, 3500); 
   };
-
-  useEffect(() => {
-    // Only run if we have a real guest (not generic)
-    if (guest?.recordId) {
-      // Fire and forget (don't await it, don't block the UI)
-      markGuestAsOpened(guest.recordId);
-    }
-  }, [guest?.recordId]);
 
   const handleBackToTop = () => {
     if (swiperRef) swiperRef.slideTo(0);
@@ -292,6 +234,7 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
                     <h1 className="text-2xl md:text-3xl font-serif text-stone-800 mb-8">Daniel & Alicia</h1>
                     <div className="w-8 h-[1px] bg-stone-300 mx-auto my-6"></div>
                     <p className="text-stone-500 text-xs italic mb-6">Saturday, September 19th, 2026</p>
+                    <p className="text-[10px] uppercase tracking-widest text-stone-400">Tap to Open</p>
                   </div>
               </div>
               <svg className="absolute inset-0 w-full h-full z-20 pointer-events-none drop-shadow-xl" viewBox="0 0 400 300" preserveAspectRatio="none">
@@ -342,54 +285,21 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
            </div>
         </SwiperSlide>
 
-        {profiles.map((profile) => (
-  <SwiperSlide key={profile.id} className="relative overflow-hidden bg-black">
-    {/* Background Image */}
-    <div 
-      className="absolute inset-0 bg-cover bg-center" 
-      style={{ backgroundImage: `url(${profile.image})` }} 
-      data-swiper-parallax="-50%"
-    >
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-    </div>
-
-    {/* Content */}
-    <div className="relative z-10 flex flex-col items-center justify-end h-full pb-20 px-6">
-      
-      {/* Glass Profile Card */}
-      <div 
-        className="w-full max-w-lg text-center p-8 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
-        data-swiper-parallax="-200"
-      >
-        
-        {/* Name in Boston Angel Font */}
-        {/* If you didn't do Step C (Tailwind Config), use style={{ fontFamily: 'Boston Angel' }} */}
-        <h2 className="text-7xl md:text-8xl text-white mb-1 font-boston tracking-wide leading-none">
-          {profile.name}
-        </h2>
-
-        {/* Parent Line */}
-        <div className="flex flex-col items-center justify-center space-y-1 mb-6 text-white/80">
-          <span className="text-xs uppercase tracking-[0.2em] opacity-70">
-            {profile.relationLabel}
-          </span>
-          <span className="text-xl font-serif italic text-white">
-            {profile.parents}
-          </span>
-        </div>
-
-        {/* Divider */}
-        <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent mx-auto mb-6"></div>
-
-        {/* Quote */}
-        <p className="text-lg text-white/90 font-light">
-          {profile.quote}
-        </p>
-
-      </div>
-    </div>
-  </SwiperSlide>
-))}
+        {/* SLIDE 2 & 3: PROFILES */}
+        <SwiperSlide className="relative overflow-hidden bg-black">
+           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(/photos/daniel.jpg)' }} data-swiper-parallax="-50%"><div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div></div>
+           <div className="relative z-10 flex flex-col items-center justify-end pb-20 h-full text-center px-6">
+             <h2 className="text-6xl font-serif mb-2" data-swiper-parallax="-300">Daniel</h2>
+             <p className="max-w-md text-lg text-gray-200" data-swiper-parallax="-200">"The calm in the storm (usually)."</p>
+           </div>
+        </SwiperSlide>
+        <SwiperSlide className="relative overflow-hidden bg-black">
+           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(/photos/alicia.jpg)' }} data-swiper-parallax="-50%"><div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div></div>
+           <div className="relative z-10 flex flex-col items-center justify-end pb-20 h-full text-center px-6">
+             <h2 className="text-6xl font-serif mb-2" data-swiper-parallax="-300">Alicia</h2>
+             <p className="max-w-md text-lg text-gray-200" data-swiper-parallax="-200">"The one who brings the chaos and the coffee."</p>
+           </div>
+        </SwiperSlide>
 
         {/* 🟢 SLIDE 4: SCHEDULE (HIDDEN for generic guests) */}
         {guest && (
