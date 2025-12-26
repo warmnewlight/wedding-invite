@@ -39,3 +39,23 @@ body {
 .transform-style-3d { transform-style: preserve-3d; }
 .rotate-x-180 { transform: rotateX(180deg); }
 .rotate-x-0 { transform: rotateX(0deg); }
+
+:root {
+  --background: #fdfbf7;
+  --foreground: #333333;
+  --accent: #d4af37;
+}
+
+/* @font-face {
+  font-family: 'Boston Angel';
+  src: url('/fonts/Boston Angel Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Update your serif utility to use it 
+.font-serif {
+  font-family: 'Boston Angel', serif;
+  font-weight: normal !important;
+} */
+

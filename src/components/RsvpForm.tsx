@@ -2,20 +2,17 @@
 
 import { useState } from 'react';
 import { submitRSVP } from '../app/actions';
-import { useSwiper } from 'swiper/react'; // 🟢 Import Swiper hook
+import { useSwiper } from 'swiper/react'; 
 
 // 🟢 CONFIGURATION: Which events allow kids?
 const EVENTS_ALLOWING_KIDS = [
   'Holy Matrimony',
   'Indonesia Celebration'
-  // 'Wedding Dinner' is NOT here, so it defaults to Adults only
 ];
-
 
 interface Props {
   guestId: string;
   allowedEvents: string[];
-  // 🟢 Receive limits
   maxAdults: number;
   maxKids: number;
 }
@@ -23,42 +20,43 @@ interface Props {
 export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDone, setIsDone] = useState(false);
-
-  // Local state to track acceptance so we can show/hide count inputs
   const [rsvps, setRsvps] = useState<Record<string, string>>({});
 
-  // 🟢 Swiper control to jump to Guestbook
+  // Access Swiper to jump to the next slide
   const swiper = useSwiper(); 
 
   const handleStatusChange = (eventName: string, status: string) => {
     setRsvps(prev => ({ ...prev, [eventName]: status }));
   };
 
-  // 🟢 1. HELPER FUNCTION TO FORCE LIMITS
   const enforceLimit = (e: React.ChangeEvent<HTMLInputElement>, max: number, min: number) => {
     let val = parseInt(e.target.value);
-    // If they delete the number (NaN), let them, but don't crash
     if (isNaN(val)) return;
-
-    // The Bouncer Logic
-    if (val > max) {
-      e.target.value = max.toString();
-    } else if (val < min) {
-      e.target.value = min.toString();
-    }
+    if (val > max) e.target.value = max.toString();
+    else if (val < min) e.target.value = min.toString();
   };
 
-  // 🟢 SUCCESS SCREEN WITH "NEXT STEP"
+  // --- SUCCESS STATE ---
   if (isDone) {
     return (
-      <div className="flex flex-col items-center gap-6 animate-fade-in">
-        <div className="text-green-400 text-xl font-serif">Response Saved!</div>
-        <p className="text-sm text-gray-400 max-w-xs text-center">
-          We have received your RSVP. While you are here, leave a message for the couple?
+      <div className="flex flex-col items-center gap-6 animate-fade-in py-10">
+        {/* Elegant Checkmark Circle */}
+        <div className="w-16 h-16 rounded-full border border-[#d4af37] flex items-center justify-center text-[#d4af37] mb-2 bg-[#d4af37]/10">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+        </div>
+        
+        <div className="text-3xl font-serif text-white">Response Saved</div>
+        
+        <p className="text-sm text-gray-300 max-w-xs text-center leading-relaxed font-sans">
+          Thank you for letting us know. We have received your RSVP.
         </p>
+
+        {/* 'Next Step' Button matches the theme */}
         <button 
-          onClick={() => swiper.slideNext()} // 🟢 Jumps to next slide (Guestbook)
-          className="bg-[#d4af37] text-black px-6 py-3 rounded uppercase font-bold text-xs tracking-widest hover:bg-white transition-all"
+          onClick={() => swiper.slideNext()} 
+          className="mt-4 border border-white/30 text-white px-8 py-3 rounded uppercase font-bold text-xs tracking-widest hover:bg-white hover:text-black transition-all"
         >
           Sign Guestbook
         </button>
@@ -66,6 +64,7 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
     );
   }
 
+  // --- FORM STATE ---
   return (
     <form 
       action={async (formData) => {
@@ -74,22 +73,23 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
         setIsSubmitting(false);
         setIsDone(true);
       }}
-      className="flex flex-col gap-6 w-full max-w-sm text-black mx-auto"
+      className="flex flex-col gap-6 w-full max-w-md mx-auto text-left"
     >
       <input type="hidden" name="recordId" value={guestId} />
       
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
         {allowedEvents.map((eventName) => {
           const allowsKids = EVENTS_ALLOWING_KIDS.includes(eventName);
           const status = rsvps[eventName];
 
           return (
-            <div key={eventName} className="bg-white/95 p-4 rounded-lg shadow-lg">
-              <p className="font-serif font-bold text-lg mb-2 text-center text-[#2c2c2c]">{eventName}</p>
+            // 🟢 CARD STYLE: Dark, transparent, elegant borders
+            <div key={eventName} className="bg-white/5 border border-white/10 p-6 rounded transition-all hover:bg-white/10 backdrop-blur-sm">
+              <p className="font-serif text-xl mb-6 text-[#fdfbf7] text-center">{eventName}</p>
               
-              {/* STATUS TOGGLE */}
-              <div className="flex gap-2 justify-center mb-3">
-                <label className="cursor-pointer">
+              {/* STATUS TOGGLE BUTTONS */}
+              <div className="grid grid-cols-2 gap-3 mb-2">
+                <label className="cursor-pointer relative">
                   <input 
                     type="radio" 
                     name={`rsvp_${eventName}`} 
@@ -98,11 +98,15 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
                     required 
                     onChange={() => handleStatusChange(eventName, 'Attending')}
                   />
-                  <div className="px-4 py-2 bg-gray-200 text-gray-600 rounded-md peer-checked:bg-green-700 peer-checked:text-white transition-all text-sm uppercase tracking-wide">
+                  {/* ACCEPT BUTTON: Turns Gold when selected */}
+                  <div className="text-center py-3 border border-white/20 rounded text-[10px] uppercase tracking-[0.2em] text-gray-400 transition-all
+                                peer-checked:bg-[#d4af37] peer-checked:text-black peer-checked:border-[#d4af37] peer-checked:font-bold
+                                hover:border-white/40">
                     Accept
                   </div>
                 </label>
-                <label className="cursor-pointer">
+
+                <label className="cursor-pointer relative">
                   <input 
                     type="radio" 
                     name={`rsvp_${eventName}`} 
@@ -110,47 +114,55 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
                     className="peer sr-only"
                     onChange={() => handleStatusChange(eventName, 'Declined')}
                   />
-                  <div className="px-4 py-2 bg-gray-200 text-gray-600 rounded-md peer-checked:bg-red-700 peer-checked:text-white transition-all text-sm uppercase tracking-wide">
+                  {/* DECLINE BUTTON: Simple subtle highlight when selected */}
+                  <div className="text-center py-3 border border-white/20 rounded text-[10px] uppercase tracking-[0.2em] text-gray-400 transition-all
+                                peer-checked:bg-white/10 peer-checked:text-white peer-checked:border-white/30
+                                hover:border-white/40">
                     Decline
                   </div>
                 </label>
               </div>
 
-              {/* 🟢 CONDITIONAL COUNT INPUTS */}
+              {/* 🟢 COUNTERS: Only show if Attending */}
               {status === 'Attending' && (
-                <div className="border-t border-gray-200 pt-3 animate-fade-in-down">
+                <div className="border-t border-white/10 pt-6 mt-4 animate-fade-in">
                   <div className="flex gap-4">
-                    {/* ADULTS INPUT */}
+                    
+                    {/* ADULTS */}
                     <div className="flex-1">
-                      <label className="block text-xs uppercase text-gray-500 mb-1">Adults</label>
+                      <label className="block text-[9px] uppercase tracking-widest text-gray-500 mb-2 text-center">Adults</label>
                       <input 
                         type="number" 
                         name={`count_adults_${eventName}`} 
                         min="1" 
-                        max={maxAdults} // 🟢 ENFORCED LIMIT
+                        max={maxAdults} 
                         defaultValue={maxAdults} 
                         onChange={(e) => enforceLimit(e, maxAdults, 1)}
-                        className="w-full p-2 border border-gray-300 rounded text-center font-bold"
+                        // Dark Input Style
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded text-center text-white font-serif text-lg focus:border-[#d4af37] focus:outline-none transition-colors"
                       />
                     </div>
 
-                    {/* KIDS INPUT (Only if allowed) */}
+                    {/* KIDS */}
                     {allowsKids ? (
                       <div className="flex-1">
-                        <label className="block text-xs uppercase text-gray-500 mb-1">Kids</label>
+                        <label className="block text-[9px] uppercase tracking-widest text-gray-500 mb-2 text-center">Kids</label>
                         <input 
                           type="number" 
                           name={`count_kids_${eventName}`} 
                           min="0" 
-                          max={maxKids} // 🟢 ENFORCED LIMIT
-                          defaultValue={maxKids} 
+                          max={maxKids} 
+                          defaultValue={0} 
                           onChange={(e) => enforceLimit(e, maxKids, 0)}
-                          className="w-full p-2 border border-gray-300 rounded text-center font-bold"
+                          className="w-full p-2 bg-black/20 border border-white/10 rounded text-center text-white font-serif text-lg focus:border-[#d4af37] focus:outline-none transition-colors"
                         />
                       </div>
                     ) : (
-                      <div className="flex-1 flex items-center justify-center opacity-50">
-                        <span className="text-[10px] uppercase text-gray-400 border border-gray-200 px-2 py-1 rounded bg-gray-50">Adults Only</span>
+                      // Placeholder for alignment if no kids allowed
+                      <div className="flex-1 flex flex-col justify-end">
+                         <div className="w-full py-3 border border-transparent text-center opacity-30">
+                            <span className="text-[9px] uppercase tracking-widest text-white">Adults Only</span>
+                         </div>
                       </div>
                     )}
                   </div>
@@ -162,13 +174,29 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
         })}
       </div>
 
-      <div className="bg-white/90 p-4 rounded-lg shadow-lg">
-        <p className="font-serif font-bold text-sm mb-2 text-gray-600">Dietary Requirements</p>
-        <textarea name="dietary" placeholder="Allergies, special needs..." className="w-full p-2 border border-gray-300 rounded text-sm min-h-[60px]"/>
+      {/* DIETARY SECTION */}
+      <div className="bg-white/5 border border-white/10 p-6 rounded backdrop-blur-sm">
+        <p className="font-serif text-lg mb-4 text-gray-200">Dietary Requirements</p>
+        <textarea 
+          name="dietary" 
+          placeholder="Please list any allergies or dietary needs..." 
+          className="w-full p-4 bg-black/20 border border-white/10 rounded text-sm text-white placeholder:text-gray-600 min-h-[100px] focus:border-[#d4af37] focus:outline-none transition-colors resize-none font-sans"
+        />
       </div>
 
-      <button type="submit" disabled={isSubmitting} className="bg-[#8b0000] text-white font-bold py-4 rounded shadow-xl hover:bg-[#600000] disabled:opacity-50 transition-all uppercase tracking-widest text-sm">
-        {isSubmitting ? 'Sending...' : 'Confirm RSVP'}
+      {/* SUBMIT BUTTON */}
+      <button 
+        type="submit" 
+        disabled={isSubmitting} 
+        className="w-full bg-[#d4af37] text-black font-bold py-4 rounded shadow-lg hover:bg-[#fdfbf7] disabled:opacity-50 disabled:cursor-not-allowed transition-all uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 mt-4"
+      >
+        {isSubmitting && (
+           <svg className="animate-spin h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+           </svg>
+        )}
+        <span>{isSubmitting ? 'Sending...' : 'Confirm Attendance'}</span>
       </button>
     </form>
   );
