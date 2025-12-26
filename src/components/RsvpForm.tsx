@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { submitRSVP } from '../app/actions';
 import { useSwiper } from 'swiper/react'; 
 
-// 🟢 CONFIGURATION: Which events allow kids?
 const EVENTS_ALLOWING_KIDS = [
   'Holy Matrimony',
   'Indonesia Celebration'
@@ -21,39 +20,67 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [rsvps, setRsvps] = useState<Record<string, string>>({});
+  
+  // Track counts locally to validate "Max vs Selected" live
+  const [counts, setCounts] = useState<Record<string, number>>({});
 
-  // Access Swiper to jump to the next slide
   const swiper = useSwiper(); 
 
   const handleStatusChange = (eventName: string, status: string) => {
     setRsvps(prev => ({ ...prev, [eventName]: status }));
   };
 
-  const enforceLimit = (e: React.ChangeEvent<HTMLInputElement>, max: number, min: number) => {
-    let val = parseInt(e.target.value);
-    if (isNaN(val)) return;
-    if (val > max) e.target.value = max.toString();
-    else if (val < min) e.target.value = min.toString();
+  const enforceLimit = (eventName: string, type: 'adults' | 'kids', valStr: string, max: number, min: number) => {
+    let val = parseInt(valStr);
+    if (isNaN(val)) val = min; 
+    if (val > max) val = max;
+    if (val < min) val = min;
+
+    // Save to state so we can re-calculate requirements instantly
+    setCounts(prev => ({ ...prev, [`${eventName}_${type}`]: val }));
+    return val;
   };
 
-  // --- SUCCESS STATE ---
+  // 🟢 1. CALCULATE LIMITS
+  const totalInvited = maxAdults + maxKids;
+
+  // 🟢 2. SMART CHECK: "Is anyone missing from any event?"
+  // We check all events marked 'Attending'. If ANY of them have a count < Total Invited, 
+  // we force them to write names.
+  const isMissingPeople = useMemo(() => {
+    return allowedEvents.some(ev => {
+      // Only check events they are actually going to
+      if (rsvps[ev] !== 'Attending') return false;
+
+      // Get current inputs (default to MAX if they haven't touched the input yet)
+      const currentAdults = counts[`${ev}_adults`] ?? maxAdults;
+      
+      // For kids, if the event doesn't allow them, the 'count' is effectively 0 for that event
+      // But we still compare against the Total Invite Group to see if people are "missing"
+      const allowsKids = EVENTS_ALLOWING_KIDS.includes(ev);
+      const currentKids = allowsKids ? (counts[`${ev}_kids`] ?? maxKids) : 0;
+
+      const totalAttendingEvent = currentAdults + currentKids;
+
+      // The Trigger: If attending count is less than the total group size
+      return totalAttendingEvent < totalInvited;
+    });
+  }, [rsvps, counts, allowedEvents, maxAdults, maxKids, totalInvited]);
+
+
+  // --- RENDER ---
   if (isDone) {
     return (
       <div className="flex flex-col items-center gap-6 animate-fade-in py-10">
-        {/* Elegant Checkmark Circle */}
         <div className="w-16 h-16 rounded-full border border-[#d4af37] flex items-center justify-center text-[#d4af37] mb-2 bg-[#d4af37]/10">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
         </div>
-        
         <div className="text-3xl font-serif text-white">Response Saved</div>
-        
         <p className="text-sm text-gray-300 max-w-xs text-center leading-relaxed font-sans">
-          Thank you for letting us know. We have received your RSVP.
+          Thank you for letting us know.
         </p>
-
-        {/* 'Next Step' Button matches the theme */}
         <button 
           onClick={() => swiper.slideNext()} 
           className="mt-4 border border-white/30 text-white px-8 py-3 rounded uppercase font-bold text-xs tracking-widest hover:bg-white hover:text-black transition-all"
@@ -64,7 +91,6 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
     );
   }
 
-  // --- FORM STATE ---
   return (
     <form 
       action={async (formData) => {
@@ -77,17 +103,17 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
     >
       <input type="hidden" name="recordId" value={guestId} />
       
+      {/* EVENTS LOOP */}
       <div className="flex flex-col gap-6">
         {allowedEvents.map((eventName) => {
           const allowsKids = EVENTS_ALLOWING_KIDS.includes(eventName);
           const status = rsvps[eventName];
 
           return (
-            // 🟢 CARD STYLE: Dark, transparent, elegant borders
             <div key={eventName} className="bg-white/5 border border-white/10 p-6 rounded transition-all hover:bg-white/10 backdrop-blur-sm">
               <p className="font-serif text-xl mb-6 text-[#fdfbf7] text-center">{eventName}</p>
               
-              {/* STATUS TOGGLE BUTTONS */}
+              {/* Radio Buttons */}
               <div className="grid grid-cols-2 gap-3 mb-2">
                 <label className="cursor-pointer relative">
                   <input 
@@ -98,14 +124,10 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
                     required 
                     onChange={() => handleStatusChange(eventName, 'Attending')}
                   />
-                  {/* ACCEPT BUTTON: Turns Gold when selected */}
-                  <div className="text-center py-3 border border-white/20 rounded text-[10px] uppercase tracking-[0.2em] text-gray-400 transition-all
-                                peer-checked:bg-[#d4af37] peer-checked:text-black peer-checked:border-[#d4af37] peer-checked:font-bold
-                                hover:border-white/40">
+                  <div className="text-center py-3 border border-white/20 rounded text-[10px] uppercase tracking-[0.2em] text-gray-400 transition-all peer-checked:bg-[#d4af37] peer-checked:text-black peer-checked:border-[#d4af37] peer-checked:font-bold hover:border-white/40">
                     Accept
                   </div>
                 </label>
-
                 <label className="cursor-pointer relative">
                   <input 
                     type="radio" 
@@ -114,21 +136,16 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
                     className="peer sr-only"
                     onChange={() => handleStatusChange(eventName, 'Declined')}
                   />
-                  {/* DECLINE BUTTON: Simple subtle highlight when selected */}
-                  <div className="text-center py-3 border border-white/20 rounded text-[10px] uppercase tracking-[0.2em] text-gray-400 transition-all
-                                peer-checked:bg-white/10 peer-checked:text-white peer-checked:border-white/30
-                                hover:border-white/40">
+                  <div className="text-center py-3 border border-white/20 rounded text-[10px] uppercase tracking-[0.2em] text-gray-400 transition-all peer-checked:bg-white/10 peer-checked:text-white peer-checked:border-white/30 hover:border-white/40">
                     Decline
                   </div>
                 </label>
               </div>
 
-              {/* 🟢 COUNTERS: Only show if Attending */}
+              {/* Counts Logic */}
               {status === 'Attending' && (
                 <div className="border-t border-white/10 pt-6 mt-4 animate-fade-in">
                   <div className="flex gap-4">
-                    
-                    {/* ADULTS */}
                     <div className="flex-1">
                       <label className="block text-[9px] uppercase tracking-widest text-gray-500 mb-2 text-center">Adults</label>
                       <input 
@@ -137,13 +154,14 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
                         min="1" 
                         max={maxAdults} 
                         defaultValue={maxAdults} 
-                        onChange={(e) => enforceLimit(e, maxAdults, 1)}
-                        // Dark Input Style
+                        onChange={(e) => {
+                           const val = enforceLimit(eventName, 'adults', e.target.value, maxAdults, 1);
+                           e.target.value = val.toString();
+                        }}
                         className="w-full p-2 bg-black/20 border border-white/10 rounded text-center text-white font-serif text-lg focus:border-[#d4af37] focus:outline-none transition-colors"
                       />
                     </div>
 
-                    {/* KIDS */}
                     {allowsKids ? (
                       <div className="flex-1">
                         <label className="block text-[9px] uppercase tracking-widest text-gray-500 mb-2 text-center">Kids</label>
@@ -152,13 +170,15 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
                           name={`count_kids_${eventName}`} 
                           min="0" 
                           max={maxKids} 
-                          defaultValue={0} 
-                          onChange={(e) => enforceLimit(e, maxKids, 0)}
+                          defaultValue={maxKids} // Defaults to MAX so user has to explicitly reduce it
+                          onChange={(e) => {
+                             const val = enforceLimit(eventName, 'kids', e.target.value, maxKids, 0);
+                             e.target.value = val.toString();
+                          }}
                           className="w-full p-2 bg-black/20 border border-white/10 rounded text-center text-white font-serif text-lg focus:border-[#d4af37] focus:outline-none transition-colors"
                         />
                       </div>
                     ) : (
-                      // Placeholder for alignment if no kids allowed
                       <div className="flex-1 flex flex-col justify-end">
                          <div className="w-full py-3 border border-transparent text-center opacity-30">
                             <span className="text-[9px] uppercase tracking-widest text-white">Adults Only</span>
@@ -168,13 +188,38 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
                   </div>
                 </div>
               )}
-
             </div>
           );
         })}
       </div>
 
-      {/* DIETARY SECTION */}
+      {/* 🟢 CONDITIONAL ATTENDEE NAMES */}
+      {/* Hide completely for single guests (Total=1) */}
+      {totalInvited > 1 && (
+        <div className="bg-white/5 border border-white/10 p-6 rounded backdrop-blur-sm">
+          <p className="font-serif text-lg mb-2 text-gray-200">Who is attending?</p>
+          
+          {/* Conditional Label based on Logic */}
+          {isMissingPeople ? (
+             <p className="text-[10px] uppercase tracking-widest text-[#d4af37] mb-2 font-bold animate-pulse">
+               * Please list the names of those attending
+             </p>
+          ) : (
+             <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">
+               (Optional) List names if different from invitation
+             </p>
+          )}
+
+          <textarea 
+            name="guestNames" 
+            required={isMissingPeople} // 🟢 THE KEY CHANGE
+            placeholder={isMissingPeople ? "e.g. Daniel, Alicia..." : "Names..."} 
+            className="w-full p-4 bg-black/20 border border-white/10 rounded text-sm text-white placeholder:text-gray-600 min-h-[60px] focus:border-[#d4af37] focus:outline-none transition-colors resize-none font-sans"
+          />
+        </div>
+      )}
+
+      {/* Dietary */}
       <div className="bg-white/5 border border-white/10 p-6 rounded backdrop-blur-sm">
         <p className="font-serif text-lg mb-4 text-gray-200">Dietary Requirements</p>
         <textarea 
@@ -184,7 +229,6 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
         />
       </div>
 
-      {/* SUBMIT BUTTON */}
       <button 
         type="submit" 
         disabled={isSubmitting} 

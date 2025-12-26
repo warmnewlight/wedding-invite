@@ -6,51 +6,42 @@ import { base } from '../lib/airtable';
 
 export async function submitRSVP(formData: FormData) {
   const recordId = formData.get('recordId') as string;
-  
-  // 1. Get the general text fields
   const dietary = formData.get('dietary') as string;
+  // 🟢 NEW: Get the names
+  const guestNames = formData.get('guestNames') as string; 
 
   if (!recordId) return { success: false, message: 'Missing Record ID' };
 
-  // 2. Prepare the data object for Airtable
-  // We start with the general columns
   const fieldsToUpdate: Record<string, any> = {
-    'RSVP Status': 'Responded', // 🟢 AUTOMATED STATUS
-    'Dietary Requirements': dietary || '', // 🟢 MATCHING YOUR NAME
+    'RSVP Status': 'Responded',
+    'Dietary Requirements': dietary || '',
+    'Guest Names': guestNames || '', // 🟢 NEW: Save to Airtable
   };
 
   // 3. Loop through all form data to find the Events
   // The form sends keys like "rsvp_Holy Matrimony"
   // We need to convert them to "RSVP - Holy Matrimony"
-  for (const [key, value] of Array.from(formData.entries())) {
-    
-    // Handle "RSVP - EventName"
+ for (const [key, value] of Array.from(formData.entries())) {
     if (key.startsWith('rsvp_')) {
-      const eventName = key.replace('rsvp_', ''); // Remove prefix
-      fieldsToUpdate[`RSVP - ${eventName}`] = value; // 🟢 CREATES "RSVP - Holy Matrimony"
+      const eventName = key.replace('rsvp_', '');
+      fieldsToUpdate[`RSVP - ${eventName}`] = value;
     }
-
-    // Handle "Adult Count - EventName"
     if (key.startsWith('count_adults_')) {
       const eventName = key.replace('count_adults_', '');
-      fieldsToUpdate[`Adult Count - ${eventName}`] = parseInt(value as string); // 🟢 CREATES "Adult Count - Holy Matrimony"
+      fieldsToUpdate[`Adult Count - ${eventName}`] = parseInt(value as string);
     }
-
-    // Handle "Kids Count - EventName"
     if (key.startsWith('count_kids_')) {
       const eventName = key.replace('count_kids_', '');
-      fieldsToUpdate[`Kids Count - ${eventName}`] = parseInt(value as string); // 🟢 CREATES "Kids Count - Holy Matrimony"
+      fieldsToUpdate[`Kids Count - ${eventName}`] = parseInt(value as string);
     }
   }
 
   try {
-    // 4. Send to Airtable
     await base('Guests').update([{ 
       id: recordId, 
       fields: fieldsToUpdate 
     }]);
     
-    // 5. Refresh the page data
     revalidatePath('/');
     return { success: true };
 
@@ -59,7 +50,6 @@ export async function submitRSVP(formData: FormData) {
     return { success: false, message: 'Database Error' };
   }
 }
-
 // ---------------------------------------------------------
 // WISH ACTION (Keep this if you have the Wish form too)
 // ---------------------------------------------------------
