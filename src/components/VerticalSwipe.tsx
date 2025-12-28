@@ -231,6 +231,11 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
   const eventsToShow = guest ? guest.allowedEvents : [];
   const currentFaqs = guest ? getFaqs(eventsToShow, guest.group, guest.maxKids || 0) : [];
 
+  // 🟢 LOGIC: Hide RSVP if they are Daniel's Relatives
+  // You can add other groups here later if needed (e.g. "A's relatives")
+  // Note: Ensure your Airtable 'Relationship' column is actually fetching this string!
+  const shouldHideRsvp = guest?.relationship === "D's relative";
+  
   const handleOpenEnvelope = () => {
     if (isOpening) return; 
     setIsOpening(true);
@@ -417,7 +422,7 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
         </SwiperSlide>
         )}
 
-        {guest && (
+        {guest && !shouldHideRsvp && (
         <SwiperSlide className={THEME.slideWrapper}>
           <SlideSection bgImage="/photos/rsvp.jpg" isScrollable={true}>
             <p className={THEME.subtitle} data-swiper-parallax="-200">Can you make it?</p>

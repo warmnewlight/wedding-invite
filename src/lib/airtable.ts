@@ -14,6 +14,7 @@ export interface Guest {
   // 🟢 NEW FIELDS
   maxAdults?: number; 
   maxKids?: number;
+  relationship: string;
   group: string;
 }
 
@@ -43,6 +44,7 @@ export async function getGuestByCode(code: string): Promise<Guest | null> {
       wish: (record.get('Wish') as string) || '', // 🟢 WE READ IT HERE
       maxAdults: (record.get('Adult Count') as number) || 1, 
       maxKids: (record.get('Kids Count') as number) || 0,
+      relationship: record.fields['Relationship'] as string,
       group: record.get('Group') as string
     };
   } catch (error) {
