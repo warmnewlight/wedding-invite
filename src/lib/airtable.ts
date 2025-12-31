@@ -1,8 +1,25 @@
 // src/lib/airtable.ts
 import Airtable from 'airtable';
 
+// 🟢 CONTROL SWITCH: Set this to 'true' while coding, 'false' when testing real data
+const USE_MOCK_DATA = true;
+
 // ... (Your existing config) ...
 export const base = new Airtable({ apiKey: process.env.AIRTABLE_API_TOKEN }).base(process.env.AIRTABLE_BASE_ID!);
+
+// --- THE FAKE GUEST (For testing without API calls) ---
+const MOCK_GUEST = {
+  recordId: 'recTest12345',
+  name: 'Daniel & Alicia (Preview)',
+  group: 'Family',
+  relationship: "D's relatives",
+  maxAdults: 2,
+  maxKids: 1, // Change this to 0 to test "Adults Only" logic
+  allowedEvents: ['Holy Matrimony', 'Dinner Reception'],
+  rsvpStatus: 'Pending', // or 'Confirmed'
+  greetingName: 'Uncle Daniel',
+  id: 'test99'
+};
 
 export interface Guest {
   recordId: string;
@@ -19,6 +36,14 @@ export interface Guest {
 }
 
 export async function getGuestByCode(code: string): Promise<Guest | null> {
+  // 🟢 1. CHECK: Are we in Mock Mode?
+  if (USE_MOCK_DATA) {
+    console.log(`⚠️ MOCK MODE: Returning fake data for code "${code}"`);
+    // Simulate a short delay so it feels like a real network request
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return MOCK_GUEST;
+  }
+  
   try {
     const records = await base('Guests')
       .select({
