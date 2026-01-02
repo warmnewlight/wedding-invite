@@ -195,14 +195,16 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
 
       {/* 🟢 CONDITIONAL ATTENDEE NAMES */}
       {/* Hide completely for single guests (Total=1) */}
+      {/* 🟢 CONDITIONAL ATTENDEE NAMES */}
+      {/* Only show this box if there is more than 1 person invited */}
       {totalInvited > 1 && (
-        <div className="bg-white/5 border border-white/10 p-6 rounded backdrop-blur-sm">
-          <p className="font-serif text-lg mb-2 text-gray-200">Who is attending?</p>
+        <div className="bg-white/5 border border-white/10 p-6 rounded backdrop-blur-sm animate-fade-in">
+          <p className="font-serif text-lg mb-2 text-gray-200">Guest Names</p>
           
-          {/* Conditional Label based on Logic */}
-          {isMissingPeople ? (
+          {/* 🟢 DYNAMIC LABEL: Changes based on whether they are coming to Dinner */}
+          {rsvps['Dinner Reception'] === 'Attending' ? (
              <p className="text-[10px] uppercase tracking-widest text-[#d4af37] mb-2 font-bold animate-pulse">
-               * Please list the names of those attending
+               * Required for Seating Chart
              </p>
           ) : (
              <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">
@@ -212,8 +214,13 @@ export default function RsvpForm({ guestId, allowedEvents, maxAdults, maxKids }:
 
           <textarea 
             name="guestNames" 
-            required={isMissingPeople} // 🟢 THE KEY CHANGE
-            placeholder={isMissingPeople ? "e.g. Daniel, Alicia..." : "Names..."} 
+            // 🟢 LOGIC: Only required if they clicked 'Accept' on Dinner Reception
+            required={rsvps['Dinner Reception'] === 'Attending'} 
+            placeholder={
+              rsvps['Dinner Reception'] === 'Attending' 
+                ? "Please list the full name of every person attending..." 
+                : "e.g. Daniel, Alicia..."
+            } 
             className="w-full p-4 bg-black/20 border border-white/10 rounded text-sm text-white placeholder:text-gray-600 min-h-[60px] focus:border-[#d4af37] focus:outline-none transition-colors resize-none font-sans"
           />
         </div>

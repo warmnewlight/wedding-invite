@@ -245,8 +245,15 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
   return (
     <div className="relative h-[100dvh] w-full bg-black text-white font-serif overflow-hidden">
       {!showEnvelope && (
-        <button onClick={() => swiperRef?.slideTo(0)} className="absolute bottom-6 right-6 z-50 w-12 h-12 bg-black/40 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white/70 hover:bg-[#d4af37] hover:text-black transition-all shadow-lg animate-fade-in group">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 group-hover:-translate-y-1 transition-transform"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>        
+        <button 
+          onClick={() => swiperRef?.slideTo(0)} 
+          className="absolute bottom-6 right-6 z-50 w-12 h-12 bg-black/40 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white/70 hover:bg-[#d4af37] hover:text-black transition-all shadow-lg animate-fade-in group"
+          aria-label="Back to Start"
+        >
+          {/* HOME ICON SVG */}
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 group-hover:scale-110 transition-transform">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+          </svg>
         </button>
       )}
 
@@ -300,7 +307,7 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
              <p className={THEME.subtitle} data-swiper-parallax="-200">September 19, 2026</p>
              <Countdown />
              <div className="mt-16 animate-bounce flex flex-col items-center opacity-70" data-swiper-parallax="-100">
-                <p className="text-[9px] uppercase tracking-[0.3em] mb-2">Swipe</p>
+                <p className="text-[9px] tracking-[0.1em] mb-2">Swipe to begin</p>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" /></svg>
              </div>
            </SlideSection>
@@ -310,9 +317,9 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
         <SwiperSlide className={THEME.slideWrapper}>
            <SlideSection bgImage="/photos/daniel.jpg">
              <div className="mt-auto pb-24">
-               <h2 className={THEME.title} data-swiper-parallax="-300">Daniel</h2>
+               <h2 className={THEME.title} data-swiper-parallax="-300">Daniel Darmawirya</h2>
                {/* 🟢 ADDED PARENTS LINE HERE */}
-               <p className={THEME.parents} data-swiper-parallax="-250">Son of Mr. & Mrs. [Name]</p> 
+               <p className={THEME.parents} data-swiper-parallax="-250">The only son of Mr. Anri Darmawirya & Mrs. Desy Octavia Darmawirya</p> 
                
                <p className={THEME.body} data-swiper-parallax="-200">"The calm in the storm (usually)."</p>
              </div>
@@ -323,9 +330,9 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
         <SwiperSlide className={THEME.slideWrapper}>
            <SlideSection bgImage="/photos/alicia.jpg">
              <div className="mt-auto pb-24">
-               <h2 className={THEME.title} data-swiper-parallax="-300">Alicia</h2>
+               <h2 className={THEME.title} data-swiper-parallax="-300">Alicia Devina Meilina</h2>
                {/* 🟢 ADDED PARENTS LINE HERE */}
-               <p className={THEME.parents} data-swiper-parallax="-250">Daughter of Mr. & Mrs. [Name]</p>
+               <p className={THEME.parents} data-swiper-parallax="-250">Daughter of Mr. Gunawan Gou & Mrs. Desy Loren</p>
 
                <p className={THEME.body} data-swiper-parallax="-200">"The one who brings the chaos and the coffee."</p>
              </div>
@@ -334,7 +341,7 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
 
         {/* SLIDE 3.5: VERSE & STORY */}
         <SwiperSlide className={THEME.slideWrapper}>
-           <SlideSection bgImage="/photos/bible.jpg" isScrollable={true}>
+           <SlideSection bgImage="/photos/bible.jpg" isScrollable={false}>
              
              {/* HEADER */}
              <p className={THEME.subtitle} data-swiper-parallax="-200">Our Foundation</p>
@@ -453,7 +460,7 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
               <div className="w-full max-w-3xl aspect-video bg-black shadow-2xl border border-white/20 rounded-sm overflow-hidden" data-swiper-parallax="-100">
                 <iframe className="w-full h-full" src="https://www.youtube.com/embed/X9Pi1wmQGU0" title="Wedding Livestream" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
               </div>
-              <p className={THEME.caption}>Live on September 19, 2026 at 11:00 AM</p>
+              <p className={THEME.caption}>Live on September 19, 2026 at 11:00 AM AEST</p>
           </SlideSection>
         </SwiperSlide>
 
