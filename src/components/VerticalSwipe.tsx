@@ -72,8 +72,12 @@ const SlideSection = ({ bgImage, isScrollable = false, children }: SlideProps) =
 // --- COUNTDOWN COMPONENT (Unchanged) ---
 function Countdown() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  
   useEffect(() => {
-    const target = new Date('2026-09-19T11:00:00');
+    // 🟢 UPDATED: Sydney Time (AEST) is +10:00
+    // This ensures everyone sees the countdown relative to Sydney time.
+    const target = new Date('2026-09-19T11:00:00+10:00'); 
+
     const interval = setInterval(() => {
       const now = new Date();
       const diff = target.getTime() - now.getTime();
@@ -87,11 +91,15 @@ function Countdown() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
   return (
     <div className="flex gap-6 text-center mt-8 animate-fade-in font-sans" data-swiper-parallax="-100">
        {Object.entries(timeLeft).map(([label, value]) => (
          <div key={label} className="flex flex-col items-center">
-           <span className="text-3xl md:text-4xl font-serif text-[#fdfbf7]">{value}</span>
+           {/* 'tabular-nums' stops the text from jumping around when seconds change */}
+           <span className="text-3xl md:text-4xl font-serif text-[#fdfbf7] tabular-nums">
+             {value < 10 ? `0${value}` : value}
+           </span>
            <span className="text-[9px] uppercase tracking-widest text-[#d4af37] opacity-80 mt-1">{label}</span>
          </div>
        ))}
@@ -321,7 +329,7 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
                {/* 🟢 ADDED PARENTS LINE HERE */}
                <p className={THEME.parents} data-swiper-parallax="-250">The only son of Mr. Anri Darmawirya & Mrs. Desy Octavia Darmawirya</p> 
                
-               <p className={THEME.body} data-swiper-parallax="-200">"The calm in the storm (usually)."</p>
+               {/* <p className={THEME.body} data-swiper-parallax="-200">"The calm in the storm (usually)."</p> */}
              </div>
            </SlideSection>
         </SwiperSlide>
@@ -332,9 +340,9 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
              <div className="mt-auto pb-24">
                <h2 className={THEME.title} data-swiper-parallax="-300">Alicia Devina Meilina</h2>
                {/* 🟢 ADDED PARENTS LINE HERE */}
-               <p className={THEME.parents} data-swiper-parallax="-250">Daughter of Mr. Gunawan Gou & Mrs. Desy Loren</p>
+               <p className={THEME.parents} data-swiper-parallax="-250">The youngest daughter of Mr. Gunawan Gou & Mrs. Desy Loren</p>
 
-               <p className={THEME.body} data-swiper-parallax="-200">"The one who brings the chaos and the coffee."</p>
+               {/* <p className={THEME.body} data-swiper-parallax="-200">"The one who brings the chaos and the coffee."</p> */}
              </div>
            </SlideSection>
         </SwiperSlide>

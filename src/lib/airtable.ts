@@ -15,7 +15,7 @@ const MOCK_GUEST = {
   relationship: "Church friends",
   maxAdults: 2,
   maxKids: 1, // Change this to 0 to test "Adults Only" logic
-  allowedEvents: ['Holy Matrimony'],
+  allowedEvents: ['Holy Matrimony', 'Dinner Reception', 'Indonesia Celebration'],
   rsvpStatus: 'Pending', // or 'Confirmed'
   greetingName: 'Uncle Daniel',
   id: 'test99'
