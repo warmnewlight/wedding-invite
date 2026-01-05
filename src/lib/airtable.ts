@@ -11,14 +11,15 @@ export const base = new Airtable({ apiKey: process.env.AIRTABLE_API_TOKEN }).bas
 const MOCK_GUEST = {
   recordId: 'recTest12345',
   name: 'Daniel & Alicia (Preview)',
-  group: 'Groomsmen',
+  group: '',
   relationship: "Church friends",
   maxAdults: 2,
   maxKids: 1, // Change this to 0 to test "Adults Only" logic
   allowedEvents: ['Holy Matrimony', 'Dinner Reception', 'Indonesia Celebration'],
   rsvpStatus: 'Pending', // or 'Confirmed'
   greetingName: 'Uncle Daniel',
-  id: 'test99'
+  id: 'test99',
+  wish: 'We wish you a Merry Christmas'
 };
 
 export interface Guest {

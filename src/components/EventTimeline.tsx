@@ -17,10 +17,10 @@ const EVENT_DETAILS: Record<string, {
     mapUrl: 'https://maps.app.goo.gl/PHMmpWTMZLxdkQ1fA' // Replace with real link
   },
   'Dinner Reception': {
-    time: '6:00 PM',
-    location: 'The Grand Ballroom',
-    address: '123 George St, The Rocks NSW 2000',
-    mapUrl: 'https://goo.gl/maps/example2'
+    time: '5:30 PM',
+    location: 'Cropley House',
+    address: '84 Watkins Rd, Baulkham Hills NSW 2153',
+    mapUrl: 'https://maps.app.goo.gl/pd7xcEoEzRDJL7Lv6'
   },
   'Indonesia Celebration': {
     // 🟢 Explicitly set the date for this event

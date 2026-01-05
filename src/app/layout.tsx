@@ -6,14 +6,14 @@ import "./globals.css";
 // Primary Serif Font for the site
 const playfair = Playfair_Display({ 
   subsets: ["latin"],
-  variable: '--font-serif', // We can use this variable in Tailwind
+  variable: '--font-seal', // We can use this variable in Tailwind
 });
 
 // Ornate font specifically for the Wax Seal
 const cinzel = Cinzel_Decorative({
   weight: "900",
   subsets: ["latin"],
-  variable: '--font-seal',
+  variable: '--font-seal1',
 });
 
 // 🟢 UPDATE METADATA HERE

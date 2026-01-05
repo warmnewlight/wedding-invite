@@ -46,16 +46,22 @@ body {
   --accent: #d4af37;
 }
 
-/* @font-face {
+@font-face {
   font-family: 'Boston Angel';
   src: url('/fonts/Boston Angel Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
-/* Update your serif utility to use it 
+/* Update your serif utility to use it  */
 .font-serif {
   font-family: 'Boston Angel', serif;
-  font-weight: normal !important;
-} */
+  font-weight: normal;
+}
+
+.font-seal {
+    /* Use the variable injected by layout.tsx */
+    font-family: var(--font-seal), serif; 
+    font-weight: normal; /* Cinzel usually looks best bold */
+  }
 

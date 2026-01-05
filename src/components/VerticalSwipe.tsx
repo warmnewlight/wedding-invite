@@ -37,23 +37,30 @@ const THEME = {
 
 // 🟢 UPDATED PALETTE: Added Sage & Forest
 const COLOR_PALETTE = [
-  { name: 'Dusty Blue', hex: '#6C8899' }, // Existing Blue
-  { name: 'Sage',       hex: '#8A9A83' }, // New: Soft Grey-Green
-  { name: 'Forest',     hex: '#2F3E35' }, // New: Deep Dark Green
-  { name: 'Terracotta', hex: '#A0785A' }, // Warm Earth
-  { name: 'Sand',       hex: '#D6C6B0' }, // Light Neutral
-  { name: 'Taupe',      hex: '#8B8580' }, // Darker Neutral
-  { name: 'Charcoal',   hex: '#363636' }, // Deepest Neutral
+  { name: 'Dusty Pink',   hex: '#F1D3D1' }, // Existing Blue
+  { name: 'Rosy Brown',   hex: '#C2999A' }, // New: Soft Grey-Green
+  { name: 'Slate Blue',   hex: '#7D95AA' }, // New: Deep Dark Green
+  { name: 'Soft Teal',    hex: '#8899A3' }, // Warm Earth
+  { name: 'Cream Beige',  hex: '#EBE4D5' }, // Light Neutral
+  { name: 'Sandy Taupe',  hex: '#A89B92' }, // Darker Neutral
+  { name: 'Smoky Plum',   hex: '#7E6C7D' }, // Deepest Neutral
 ];
 
-// --- 2. REUSABLE SLIDE COMPONENT ---
+// Update the interface
 interface SlideProps {
   bgImage: string;
   isScrollable?: boolean;
+  // 🟢 NEW: Allow disabling the default dark overlay
+  useDarkOverlay?: boolean; 
   children: React.ReactNode;
 }
 
-const SlideSection = ({ bgImage, isScrollable = false, children }: SlideProps) => {
+const SlideSection = ({ 
+  bgImage, 
+  isScrollable = false, 
+  useDarkOverlay = true, // Default to true for other slides
+  children 
+}: SlideProps) => {
   return (
     <>
       <div 
@@ -61,7 +68,10 @@ const SlideSection = ({ bgImage, isScrollable = false, children }: SlideProps) =
         style={{ backgroundImage: `url(${bgImage})` }} 
         data-swiper-parallax="-50%"
       />
-      <div className={THEME.overlay} />
+      
+      {/* 🟢 CONDITIONAL OVERLAY: Only show if requested */}
+      {useDarkOverlay && <div className={THEME.overlay} />}
+
       <div className={`${THEME.contentContainer} ${isScrollable ? THEME.scrollContent : THEME.centerContent}`}>
         {children}
       </div>
@@ -125,9 +135,21 @@ function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { na
         <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-left border-t border-white/10 pt-4 swiper-no-swiping">
            {allWishes.length === 0 ? <p className="text-gray-500 text-center text-sm">No messages yet.</p> : (
              allWishes.map((w, i) => (
-               <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
-                 <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
+              //  <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
+              <div key={i} className="bg-[#fdfbf7] p-6 rounded-sm shadow-lg text-gray-800 rotate-1 hover:rotate-0 transition-transform duration-300 mx-2 relative border border-stone-200">
+                 {/* Gold Pin/Tape at top */}
+                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#d4af37]/50 shadow-sm"></div>
+                 {/* <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
                  <p className="text-[9px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
+               </div> */}
+               {/* The Message (Jimmy Script) */}
+                 <p className="font-serif text-xl leading-relaxed mb-4 text-center text-stone-800">"{w.message}"</p>
+                 
+                 {/* The Sign-off (Jimmy Sans) */}
+                 <div className="border-t border-stone-300 w-8 mx-auto mb-2"></div>
+                 <p className="text-[9px] font-sans uppercase tracking-widest text-stone-500 text-center">
+                   {w.name}
+                 </p>
                </div>
              ))
            )}
@@ -164,10 +186,36 @@ function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { na
       <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-left border-t border-white/10 pt-4 swiper-no-swiping pb-32">
         <h3 className="text-[#d4af37] text-xs uppercase tracking-widest text-center mb-4">Latest Wishes</h3>
         {allWishes.length === 0 ? <p className="text-gray-500 text-center text-sm italic">Be the first to leave a wish!</p> : allWishes.map((w, i) => (
-            <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
-              <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
-              <p className="text-[9px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
-            </div>
+            // <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
+            //   <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
+            //   <p className="text-[9px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
+            // </div>
+
+            // <div key={i} className="bg-[#fdfbf7] p-6 rounded-sm shadow-lg text-gray-800 rotate-1 hover:rotate-0 transition-transform duration-300 mx-2 my-4 relative">
+            //   {/* A decorative "tape" or "pin" at the top */}
+            //   <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#d4af37] shadow-sm"></div>
+            //   <p className="font-serif text-lg leading-relaxed mb-4">"{w.message}"</p>
+            //   <div className="border-t border-gray-300 w-8 mb-2"></div>
+            //   <p className="text-[10px] uppercase tracking-widest font-sans text-gray-500">
+            //     Signed, {w.name}
+            //   </p>
+            // </div>
+
+            <div key={i} className="bg-[#fdfbf7] p-6 rounded-sm shadow-lg text-gray-800 rotate-[-1deg] even:rotate-1 hover:rotate-0 transition-transform duration-300 mx-2 mt-6 relative border border-stone-200">
+   
+   {/* 🟢 THE TAPE EFFECT */}
+   {/* This creates a semi-transparent strip at the top center */}
+   <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-yellow-100/30 backdrop-blur-[2px] shadow-sm rotate-[-2deg] border-l border-r border-white/40 opacity-80"></div>
+
+   {/* The Message */}
+   <p className="font-serif text-xl leading-relaxed mb-4 text-center text-stone-800">"{w.message}"</p>
+   
+   {/* The Sign-off */}
+   <div className="border-t border-stone-300 w-8 mx-auto mb-2"></div>
+   <p className="text-[9px] font-sans uppercase tracking-widest text-stone-500 text-center">
+      {w.name}
+   </p>
+</div>
           ))}
       </div>
     </div>
@@ -195,7 +243,7 @@ const getFaqs = (allowedEvents: string[], group: string, maxKids: number) => {
   else {
     faqs.push({ 
       q: "Is there a dress code?", 
-      a: "Formal Attire. We kindly ask guests to dress in neutral or earthy tones (see palette below)." 
+      a: "Cocktail Attire. We kindly ask guests to dress in the tones as seen below." 
     });
   }
 
@@ -221,6 +269,10 @@ const getFaqs = (allowedEvents: string[], group: string, maxKids: number) => {
       });
     }
   }
+
+  faqs.push({
+    q: "For those that need transport or accommodation, please contact us personally."
+  })
 
   return faqs;
 };
@@ -308,89 +360,111 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
         className="h-full w-full z-10 bg-black"
       >
         
-        {/* SLIDE 1: INTRO */}
+        {/* SLIDE 1: INTRO (Unchanged, keeps dark overlay for text contrast) */}
         <SwiperSlide className={THEME.slideWrapper}>
            <SlideSection bgImage="/photos/intro.jpg">
-             <h1 className={THEME.title} data-swiper-parallax="-300">Daniel & Alicia</h1>
+             <h1 className="font-serif text-6xl md:text-8xl mb-2 text-[#fdfbf7] drop-shadow-lg leading-tight" data-swiper-parallax="-300">Daniel & Alicia</h1>
              <p className={THEME.subtitle} data-swiper-parallax="-200">September 19, 2026</p>
              <Countdown />
              <div className="mt-16 animate-bounce flex flex-col items-center opacity-70" data-swiper-parallax="-100">
-                <p className="text-[9px] tracking-[0.1em] mb-2">Swipe to begin</p>
+                <p className="text-[9px] tracking-[0.1em] mb-2 font-sans">Swipe to begin</p>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" /></svg>
              </div>
            </SlideSection>
         </SwiperSlide>
 
-        {/* SLIDE 2: GROOM (UPDATED with Parents) */}
+        {/* SLIDE 2: GROOM (Redesigned) */}
         <SwiperSlide className={THEME.slideWrapper}>
-           <SlideSection bgImage="/photos/daniel.jpg">
-             <div className="mt-auto pb-24">
-               <h2 className={THEME.title} data-swiper-parallax="-300">Daniel Darmawirya</h2>
-               {/* 🟢 ADDED PARENTS LINE HERE */}
-               <p className={THEME.parents} data-swiper-parallax="-250">The only son of Mr. Anri Darmawirya & Mrs. Desy Octavia Darmawirya</p> 
-               
-               {/* <p className={THEME.body} data-swiper-parallax="-200">"The calm in the storm (usually)."</p> */}
-             </div>
-           </SlideSection>
-        </SwiperSlide>
-
-        {/* SLIDE 3: BRIDE (UPDATED with Parents) */}
-        <SwiperSlide className={THEME.slideWrapper}>
-           <SlideSection bgImage="/photos/alicia.jpg">
-             <div className="mt-auto pb-24">
-               <h2 className={THEME.title} data-swiper-parallax="-300">Alicia Devina Meilina</h2>
-               {/* 🟢 ADDED PARENTS LINE HERE */}
-               <p className={THEME.parents} data-swiper-parallax="-250">The youngest daughter of Mr. Gunawan Gou & Mrs. Desy Loren</p>
-
-               {/* <p className={THEME.body} data-swiper-parallax="-200">"The one who brings the chaos and the coffee."</p> */}
-             </div>
-           </SlideSection>
-        </SwiperSlide>
-
-        {/* SLIDE 3.5: VERSE & STORY */}
-        <SwiperSlide className={THEME.slideWrapper}>
-           <SlideSection bgImage="/photos/bible.jpg" isScrollable={false}>
+           {/* 🟢 useDarkOverlay={false} lets the photo shine */}
+           <SlideSection bgImage="/photos/daniel.jpg" useDarkOverlay={false}>
              
-             {/* HEADER */}
-             <p className={THEME.subtitle} data-swiper-parallax="-200">Our Foundation</p>
+             {/* 🟢 Custom Gradient: Only darkens the bottom so text is readable */}
+             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
              
-             {/* THE VERSE */}
-             <div className="mb-10 max-w-2xl mx-auto px-4" data-swiper-parallax="-300">
-                <p className="text-2xl md:text-3xl font-serif italic text-[#fdfbf7] leading-relaxed mb-4">
-                  "Therefore what God has joined together, let no one separate."
-                </p>
-                <p className="text-xs text-[#d4af37] uppercase tracking-[0.2em]">
-                  — Mark 10:9
-                </p>
+             <div className="relative z-10 mt-auto pb-24 text-left w-full px-4">
+               <p className="text-[#d4af37] text-xs font-sans uppercase tracking-[0.2em] mb-2" data-swiper-parallax="-300">The Groom</p>
+               <h2 className="font-serif text-6xl md:text-7xl text-white mb-4 leading-none" data-swiper-parallax="-250">Daniel Darmawirya</h2>
+               <div className="w-12 h-[1px] bg-[#d4af37] mb-6 opacity-80"></div>
+               <p className="font-sans text-sm md:text-base text-gray-300 leading-relaxed max-w-sm" data-swiper-parallax="-200">
+                 The only son of <br/>
+                 <span className="text-white">Mr. Anri Darmawirya & Mrs. Desy Octavia Darmawirya</span>
+               </p>
              </div>
+           </SlideSection>
+        </SwiperSlide>
 
-             {/* THE STORY - Elegant & Concise */}
-             <div className="max-w-md mx-auto text-center space-y-8 pb-20 px-4" data-swiper-parallax="-100">
-                <div className="w-12 h-[1px] bg-[#d4af37] mx-auto opacity-50"></div>
-                
-                <h3 className="text-xl font-serif text-white">Our Story</h3>
-                
-                <p className={THEME.body}>
-                  Rooted in a community of believers, our journey unfolded. 
-                  Amidst the cherry blossoms, a heartfelt letter marked the beginning—a prayerful walk towards a holy union.
-                </p>
-                
-                <p className={THEME.body}>
-                  God has faithfully guided us from that first hope to this covenant. 
-                  We celebrate His grace today and ask for your continued prayers as we step into this new chapter.
-                </p>
+        {/* SLIDE 3: BRIDE (Redesigned) */}
+        <SwiperSlide className={THEME.slideWrapper}>
+           <SlideSection bgImage="/photos/alicia.jpg" useDarkOverlay={false}>
+             
+             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
+
+             <div className="relative z-10 mt-auto pb-24 text-right w-full px-4 flex flex-col items-end">
+               <p className="text-[#d4af37] text-xs font-sans uppercase tracking-[0.2em] mb-2" data-swiper-parallax="-300">The Bride</p>
+               <h2 className="font-serif text-6xl md:text-7xl text-white mb-4 leading-none" data-swiper-parallax="-250">Alicia Devina Meilina</h2>
+               <div className="w-12 h-[1px] bg-[#d4af37] mb-6 opacity-80"></div>
+               <p className="font-sans text-sm md:text-base text-gray-300 leading-relaxed max-w-sm" data-swiper-parallax="-200">
+                 The youngest daughter of <br/>
+                 <span className="text-white">Mr. Gunawan Gou & Mrs. Desy Loren</span>
+               </p>
+             </div>
+           </SlideSection>
+        </SwiperSlide>
+
+        {/* SLIDE 3.5: STORY (Scrollable) */}
+        <SwiperSlide className={THEME.slideWrapper}>
+           {/* Enable scrolling */}
+           <SlideSection bgImage="/photos/bible.jpg" isScrollable={true}>
+             
+             {/* Container adds padding so scroll doesn't hit edges */}
+             <div className="min-h-full flex flex-col justify-center py-20">
+                 <p className={THEME.subtitle} data-swiper-parallax="-200">Our Foundation</p>
+                 
+                 <div className="mb-10 max-w-2xl mx-auto px-4" data-swiper-parallax="-300">
+                    <p className="text-2xl md:text-3xl font-serif italic text-[#fdfbf7] leading-relaxed mb-4">
+                      "Therefore what God has joined together, let no one separate."
+                    </p>
+                    <p className="text-xs text-[#d4af37] uppercase tracking-[0.2em] font-sans">
+                      — Mark 10:9
+                    </p>
+                 </div>
+
+                 <div className="max-w-md mx-auto text-center space-y-6 px-4" data-swiper-parallax="-100">
+                    <div className="w-12 h-[1px] bg-[#d4af37] mx-auto opacity-50"></div>
+                    <h3 className="text-xl font-serif text-white">Our Story</h3>
+                    
+                    <p className={THEME.body}>
+                      Rooted in a community of believers, our journey unfolded. 
+                      Amidst the cherry blossoms, a heartfelt letter marked the beginning—a prayerful walk towards a holy union.
+                    </p>
+                    
+                    <p className={THEME.body}>
+                      God has faithfully guided us from that first hope to this covenant. 
+                      We celebrate His grace today and ask for your continued prayers as we step into this new chapter.
+                    </p>
+                    
+                    {/* Add extra padding at bottom so scrolling doesn't feel cramped */}
+                    <div className="h-12"></div>
+                 </div>
              </div>
 
            </SlideSection>
         </SwiperSlide>
 
-        {/* REST OF SLIDES (Unchanged) */}
+        {/* SLIDE 4: EVENTS (Centered, Non-Scrollable) */}
         {guest && (
         <SwiperSlide className={THEME.slideWrapper}>
-           <SlideSection bgImage="/photos/lights.jpg" isScrollable={true}>
-             <p className={THEME.subtitle} data-swiper-parallax="-200">The Details</p>
-             <h2 className={THEME.heading} data-swiper-parallax="-300">Schedule</h2>
-             <div className="w-full" data-swiper-parallax="-100"><EventTimeline events={eventsToShow} /></div>
+           {/* 🟢 isScrollable={false} ensures it centers vertically */}
+           <SlideSection bgImage="/photos/lights.jpg" isScrollable={false}>
+             <div className="w-full flex flex-col items-center justify-center h-full">
+                <p className={THEME.subtitle} data-swiper-parallax="-200">The Details</p>
+                <h2 className={THEME.heading} data-swiper-parallax="-300">Schedule</h2>
+                
+                {/* We use w-full to ensure alignment, but max-h-screen to prevent overflow issues on tiny screens */}
+                <div className="w-full max-h-[70vh] flex flex-col justify-center" data-swiper-parallax="-100">
+                   <EventTimeline events={eventsToShow} />
+                </div>
+             </div>
            </SlideSection>
         </SwiperSlide>
         )}
