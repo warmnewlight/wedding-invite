@@ -135,21 +135,9 @@ function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { na
         <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-left border-t border-white/10 pt-4 swiper-no-swiping">
            {allWishes.length === 0 ? <p className="text-gray-500 text-center text-sm">No messages yet.</p> : (
              allWishes.map((w, i) => (
-              //  <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
-              <div key={i} className="bg-[#fdfbf7] p-6 rounded-sm shadow-lg text-gray-800 rotate-1 hover:rotate-0 transition-transform duration-300 mx-2 relative border border-stone-200">
-                 {/* Gold Pin/Tape at top */}
-                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#d4af37]/50 shadow-sm"></div>
-                 {/* <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
+               <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
+                 <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
                  <p className="text-[9px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
-               </div> */}
-               {/* The Message (Jimmy Script) */}
-                 <p className="font-serif text-xl leading-relaxed mb-4 text-center text-stone-800">"{w.message}"</p>
-                 
-                 {/* The Sign-off (Jimmy Sans) */}
-                 <div className="border-t border-stone-300 w-8 mx-auto mb-2"></div>
-                 <p className="text-[9px] font-sans uppercase tracking-widest text-stone-500 text-center">
-                   {w.name}
-                 </p>
                </div>
              ))
            )}
@@ -186,36 +174,10 @@ function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { na
       <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-left border-t border-white/10 pt-4 swiper-no-swiping pb-32">
         <h3 className="text-[#d4af37] text-xs uppercase tracking-widest text-center mb-4">Latest Wishes</h3>
         {allWishes.length === 0 ? <p className="text-gray-500 text-center text-sm italic">Be the first to leave a wish!</p> : allWishes.map((w, i) => (
-            // <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
-            //   <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
-            //   <p className="text-[9px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
-            // </div>
-
-            // <div key={i} className="bg-[#fdfbf7] p-6 rounded-sm shadow-lg text-gray-800 rotate-1 hover:rotate-0 transition-transform duration-300 mx-2 my-4 relative">
-            //   {/* A decorative "tape" or "pin" at the top */}
-            //   <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#d4af37] shadow-sm"></div>
-            //   <p className="font-serif text-lg leading-relaxed mb-4">"{w.message}"</p>
-            //   <div className="border-t border-gray-300 w-8 mb-2"></div>
-            //   <p className="text-[10px] uppercase tracking-widest font-sans text-gray-500">
-            //     Signed, {w.name}
-            //   </p>
-            // </div>
-
-            <div key={i} className="bg-[#fdfbf7] p-6 rounded-sm shadow-lg text-gray-800 rotate-[-1deg] even:rotate-1 hover:rotate-0 transition-transform duration-300 mx-2 mt-6 relative border border-stone-200">
-   
-   {/* 🟢 THE TAPE EFFECT */}
-   {/* This creates a semi-transparent strip at the top center */}
-   <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-yellow-100/30 backdrop-blur-[2px] shadow-sm rotate-[-2deg] border-l border-r border-white/40 opacity-80"></div>
-
-   {/* The Message */}
-   <p className="font-serif text-xl leading-relaxed mb-4 text-center text-stone-800">"{w.message}"</p>
-   
-   {/* The Sign-off */}
-   <div className="border-t border-stone-300 w-8 mx-auto mb-2"></div>
-   <p className="text-[9px] font-sans uppercase tracking-widest text-stone-500 text-center">
-      {w.name}
-   </p>
-</div>
+            <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
+              <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
+              <p className="text-[9px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
+            </div>
           ))}
       </div>
     </div>

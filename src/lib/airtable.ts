@@ -1,26 +1,9 @@
 // src/lib/airtable.ts
+import { unstable_cache } from 'next/cache';
 import Airtable from 'airtable';
-
-// 🟢 CONTROL SWITCH: Set this to 'true' while coding, 'false' when testing real data
-const USE_MOCK_DATA = true;
 
 // ... (Your existing config) ...
 export const base = new Airtable({ apiKey: process.env.AIRTABLE_API_TOKEN }).base(process.env.AIRTABLE_BASE_ID!);
-
-// --- THE FAKE GUEST (For testing without API calls) ---
-const MOCK_GUEST = {
-  recordId: 'recTest12345',
-  name: 'Daniel & Alicia (Preview)',
-  group: '',
-  relationship: "Church friends",
-  maxAdults: 2,
-  maxKids: 1, // Change this to 0 to test "Adults Only" logic
-  allowedEvents: ['Holy Matrimony', 'Dinner Reception', 'Indonesia Celebration'],
-  rsvpStatus: 'Pending', // or 'Confirmed'
-  greetingName: 'Uncle Daniel',
-  id: 'test99',
-  wish: 'We wish you a Merry Christmas'
-};
 
 export interface Guest {
   recordId: string;
@@ -36,15 +19,8 @@ export interface Guest {
   group: string;
 }
 
-export async function getGuestByCode(code: string): Promise<Guest | null> {
-  // 🟢 1. CHECK: Are we in Mock Mode?
-  if (USE_MOCK_DATA) {
-    console.log(`⚠️ MOCK MODE: Returning fake data for code "${code}"`);
-    // Simulate a short delay so it feels like a real network request
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return MOCK_GUEST;
-  }
-  
+async function _getGuestByCode(code: string): Promise<Guest | null> {
+  if (!code) return null;
   try {
     const records = await base('Guests')
       .select({
@@ -79,6 +55,15 @@ export async function getGuestByCode(code: string): Promise<Guest | null> {
   }
 }
 
+export const getGuestByCode = unstable_cache(
+  async (code) => _getGuestByCode(code),
+  ['guest-data'], 
+  { 
+    tags: ['guest'], // General tag for all guests
+    revalidate: 3600 
+  }
+);
+
 // Keep your update function here too...
 export async function updateGuestRSVP(
   recordId: string, 
@@ -107,25 +92,30 @@ export async function updateGuestRSVP(
   }
 }
 
-export async function getWishes() {
-  try {
+async function _getWishes() {
+    try {
     const records = await base('Guests').select({
       filterByFormula: "NOT({Wish} = '')",
-      // 🟢 FETCH GREETING NAME TOO
       fields: ['Guest', 'Greeting Name', 'Wish', 'Wish Time'], 
       sort: [{ field: 'Wish Time', direction: 'desc' }] 
     }).all();
 
-    const wishes = records.map(record => ({
-      // 🟢 LOGIC: Use Greeting Name if it exists, otherwise Guest Name
+    return records.map(record => ({
       name: (record.get('Greeting Name') as string) || (record.get('Guest') as string),
       message: record.get('Wish') as string,
     }));
-    
-    return wishes;
-
-  } catch (error: any) {
-    console.error('❌ AIRTABLE ERROR:', error.statusCode, error.message);
+  } catch (error) {
+    console.error(error);
     return [];
   }
 }
+
+// 2. Export the CACHED version
+export const getWishes = unstable_cache(
+  async () => _getWishes(),
+  ['public-wishes'], // Internal cache ID
+  { 
+    tags: ['wishes'], // 🟢 KEY: We use this tag to clear cache later
+    revalidate: 3600  // Auto-refresh every 1 hour even if no new wishes
+  }
+);

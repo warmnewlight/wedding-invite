@@ -2,9 +2,6 @@ import VerticalSwipe from '../components/VerticalSwipe';
 import { getGuestByCode } from '../lib/airtable';
 import { getWishes } from '../lib/airtable'; // 🟢 Import getWishes
 
-// 🟢 ADD THIS LINE HERE:
-export const revalidate = 0;
-
 export default async function Home({
   searchParams,
 }: {

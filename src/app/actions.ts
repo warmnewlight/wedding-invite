@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache'; // 🟢 Import revalidateTag
 import { base } from '../lib/airtable';
 
 
@@ -42,10 +42,10 @@ export async function submitRSVP(formData: FormData) {
       fields: fieldsToUpdate 
     }]);
     
-    revalidatePath('/');
-    return { success: true };
-
-  } catch (error) {
+    revalidateTag('guest', 'max'); 
+     
+     return { success: true };
+   } catch (error) {
     console.error('Failed to update RSVP:', error);
     return { success: false, message: 'Database Error' };
   }
@@ -64,7 +64,10 @@ export async function submitWish(formData: FormData) {
       id: recordId, 
       fields: { 'Wish': wish } 
     }]);
-    revalidatePath('/');
+
+    // 🟢 MAGICAL LINE: This tells Next.js "The 'wishes' data is old, fetch it fresh next time."
+    revalidateTag('wishes', 'max'); 
+    
     return { success: true };
   } catch (error) {
     console.error('Failed to submit wish:', error);
