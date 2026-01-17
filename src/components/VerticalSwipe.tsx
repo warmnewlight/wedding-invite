@@ -13,6 +13,7 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import '../app/globals.css';
+import { a, q } from 'framer-motion/client';
 
 // --- 1. DESIGN SYSTEM CONSTANTS ---
 const THEME = {
@@ -193,7 +194,7 @@ const getFaqs = (allowedEvents: string[], group: string, maxKids: number) => {
   if (['Bridesmaids', 'Groomsmen'].includes(group)) {
     faqs.push({ 
       q: "What is my attire?", 
-      a: "Please refer to the chat for your specific outfit details." 
+      a: "Please refer to our group chat for your specific outfit details." 
     });
   } 
   else if (group === 'Family') {
@@ -205,22 +206,34 @@ const getFaqs = (allowedEvents: string[], group: string, maxKids: number) => {
   else {
     faqs.push({ 
       q: "Is there a dress code?", 
-      a: "Cocktail Attire. We kindly ask guests to dress in the tones as seen below." 
+      a: "Cocktail Attire. We kindly ask guests to dress in neutral/earthy tones, examples as seen below." 
+    });
+  }
+
+  if (['Bridesmaids', 'Groomsmen', 'Family', 'Relatives'].includes(group)) {
+    faqs.push({ 
+      q: "When should I RSVP by?", 
+      a: "We kindly request your response by the end of May 2026 to assist us with our arrangements." 
+    });
+  } else {
+    faqs.push({ 
+      q: "When should I RSVP by?", 
+      a: "Please RSVP latest by the end of July 2026." 
     });
   }
 
   // --- EVENT LOGIC ---
   if (allowedEvents.includes('Holy Matrimony')) {
     faqs.push({ 
-      q: "Where do I park for the Ceremony?", 
-      a: "Limited parking at St. Mary's. Arrive 15 mins early." 
+      q: "Where do I park for the ceremony?", 
+      a: "Street parking is available around the church (Botany Rd and surrounding streets), but it can be limited. We recommend arriving 15 minutes early to find a spot." 
     });
   }
 
   if (allowedEvents.includes('Dinner Reception')) {
     faqs.push({ 
-      q: "Where do I park for the Reception?", 
-      a: "Valet parking available at Grand Ballroom entrance." 
+      q: "Where do I park for the reception?", 
+      a: "Yes, ample free parking is available on-site at the venue." 
     });
 
     // 🟢 NEW LOGIC: Only show this if they actually have kids (maxKids > 0)
@@ -233,8 +246,28 @@ const getFaqs = (allowedEvents: string[], group: string, maxKids: number) => {
   }
 
   faqs.push({
-    q: "For those that need transport or accommodation, please contact us personally."
+    q: "Can I bring a plus one?",
+    a: "Due to venue capacity limits, we are unable to accommodate plus ones. We can only welcome the guests named on your invitation."
   })
+
+  faqs.push({
+    q: "Do you have a gift registry?",
+    a: "Your presence at our wedding is the greatest gift of all. If you would like to give a gift, a contribution to our wishing well would be warmly appreciated."
+  })
+
+  faqs.push({
+    q: "Can I take photos?",
+    a: "Yes, snap away! Just please be mindful not to block the aisle or the professional photographers."
+  })
+
+  faqs.push({
+    q: "For those that need transport or accommodation, please contact us personally. Please ensure you list any dietary requirements or allergies when you RSVP so we can cater for you safely."
+  })
+
+  // faqs.push({
+  //   q: ""
+  // })
+  
 
   return faqs;
 };

@@ -24,11 +24,11 @@ const EVENT_DETAILS: Record<string, {
   },
   'Indonesia Celebration': {
     // 🟢 Explicitly set the date for this event
-    date: 'Saturday, November 7, 2026', 
+    date: 'Sunday, November 8, 2026', 
     time: '7:00 PM',
-    location: 'Jakarta Garden Venue',
-    address: 'Jl. Garden No. 5, Jakarta',
-    mapUrl: 'https://goo.gl/maps/example3'
+    location: 'Grand Hwa Yen',
+    address: 'Jl. Roa Malaka Utara No.30, Jakarta',
+    mapUrl: 'https://maps.app.goo.gl/xBj5RsThKXaGZHUQ7'
   },
 };
 
