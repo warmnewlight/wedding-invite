@@ -342,8 +342,21 @@ export default function VerticalSwipe({ guest, publicWishes }: Props) {
     setTimeout(() => { setShowEnvelope(false); }, 3500); 
   };
 
+  // 🟢 NEW: Manually Lock/Unlock Swiper based on Envelope state
+  useEffect(() => {
+    if (!swiperRef) return; // Wait until Swiper is ready
+
+    if (showEnvelope) {
+      // FREEZE: Disables swiping, keyboard, and mousewheel
+      swiperRef.disable(); 
+    } else {
+      // UNFREEZE: Re-enables everything
+      swiperRef.enable();
+    }
+  }, [swiperRef, showEnvelope]);
+
   return (
-    <div className="relative h-[100dvh] w-full bg-black text-white font-serif overflow-hidden">
+    <div className="relative h-[100dvh] w-full bg-black text-white font-serif overflow-hidden no-select" onContextMenu={(e) => e.preventDefault()}>
       {!showEnvelope && (
         <button 
           onClick={() => swiperRef?.slideTo(0)} 
