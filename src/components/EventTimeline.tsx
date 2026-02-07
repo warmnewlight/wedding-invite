@@ -17,18 +17,10 @@ const EVENT_DETAILS: Record<string, {
     mapUrl: 'https://maps.app.goo.gl/PHMmpWTMZLxdkQ1fA' // Replace with real link
   },
   'Dinner Reception': {
-    time: '5:30 PM',
-    location: 'Cropley House',
-    address: '84 Watkins Rd, Baulkham Hills NSW 2153',
-    mapUrl: 'https://maps.app.goo.gl/pd7xcEoEzRDJL7Lv6'
-  },
-  'Indonesia Celebration': {
-    // 🟢 Explicitly set the date for this event
-    date: 'Sunday, November 8, 2026', 
-    time: '7:00 PM',
-    location: 'Grand Hwa Yen',
-    address: 'Jl. Roa Malaka Utara No.30, Jakarta',
-    mapUrl: 'https://maps.app.goo.gl/xBj5RsThKXaGZHUQ7'
+    time: '6:30 PM',
+    location: 'Somewhere',
+    address: '248 Meurants Ln, Glenwood NSW 2768',
+    mapUrl: 'https://maps.app.goo.gl/3JoPLGNhqJr8MfdK9'
   },
 };
 

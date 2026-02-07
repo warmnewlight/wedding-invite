@@ -5,8 +5,7 @@ import { submitRSVP } from '../app/actions';
 import { useSwiper } from 'swiper/react'; 
 
 const EVENTS_ALLOWING_KIDS = [
-  'Holy Matrimony',
-  'Indonesia Celebration'
+  'Holy Matrimony'
 ];
 
 interface Props {
