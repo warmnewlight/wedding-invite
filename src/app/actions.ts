@@ -68,7 +68,8 @@ export async function submitWish(formData: FormData) {
     // 🟢 MAGICAL LINE: This tells Next.js "The 'wishes' data is old, fetch it fresh next time."
     revalidateTag('wishes', 'max'); 
     
-    return { success: true };
+    // Return the wish text back to the client so it can "update" itself
+    return { success: true, wish: wish };
   } catch (error) {
     console.error('Failed to submit wish:', error);
     return { success: false };

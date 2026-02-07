@@ -122,20 +122,62 @@ function Countdown() {
 function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { name: string, message: string }[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  
+  // 🟢 1. STATE FOR TEXT AREA
+  // We initialize it with the prop, but we control it locally after that.
   const [wishText, setWishText] = useState(guest?.wish || '');
 
-  useEffect(() => { if (guest?.wish) setWishText(guest.wish); }, [guest?.wish]);
+  // 🟢 2. STATE FOR THE LIST
+  // We allow the list to be updated locally so the user sees their new wish appear instantly.
+  const [displayWishes, setDisplayWishes] = useState(allWishes);
 
+  // Sync if props change (unlikely during a single session, but good practice)
+  useEffect(() => { 
+    if (guest?.wish) setWishText(guest.wish); 
+  }, [guest?.wish]);
+
+  useEffect(() => {
+    setDisplayWishes(allWishes);
+  }, [allWishes]);
+
+  // 🟢 3. THE NEW HANDLER
+  async function handleOptimisticSubmit(formData: FormData) {
+    setIsSubmitting(true);
+    
+    // 1. Capture what the user typed RIGHT NOW
+    const newWishMessage = formData.get('wish') as string;
+    
+    // 2. Send to server
+    await submitWish(formData);
+
+    // 3. OPTIMISTIC UPDATES (Update UI without waiting for Server)
+    
+    // Update the Text Box State (so when they click "Write Another", it shows the new text)
+    setWishText(newWishMessage); 
+    
+    // Add the new wish to the top of the list below instantly
+    if (guest) {
+      setDisplayWishes(prev => [
+        { name: guest.name, message: newWishMessage }, 
+        ...prev.filter(w => w.name !== guest.name) // Remove their old wish if it existed to avoid dupes
+      ]);
+    }
+
+    setIsSubmitting(false);
+    setIsSent(true);
+  }
+
+  // --- RENDER: GUEST NOT FOUND ---
   if (!guest) {
     return (
       <div className="w-full max-w-md flex flex-col gap-4 h-full pb-32">
         <div className="bg-white/10 p-6 rounded-lg text-center mb-4 border border-white/10 backdrop-blur-sm">
            <p className="text-sm text-gray-300 italic font-serif">"Join us in celebrating our special day."</p>
         </div>
-        <h3 className={THEME.subtitle}>Guestbook Messages</h3>
+        <h3 className="text-xs md:text-sm font-sans uppercase tracking-[0.2em] text-[#d4af37] mb-4">Guestbook Messages</h3>
         <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-left border-t border-white/10 pt-4 swiper-no-swiping">
-           {allWishes.length === 0 ? <p className="text-gray-500 text-center text-sm">No messages yet.</p> : (
-             allWishes.map((w, i) => (
+           {displayWishes.length === 0 ? <p className="text-gray-500 text-center text-sm">No messages yet.</p> : (
+             displayWishes.map((w, i) => (
                <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
                  <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
                  <p className="text-[9px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
@@ -147,8 +189,7 @@ function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { na
     );
   }
   
-  const initialWish = guest?.wish || '';
-
+  // --- RENDER: SUCCESS SCREEN ---
   if (isSent) {
     return (
       <div className="w-full max-w-md h-full flex flex-col items-center justify-center animate-fade-in">
@@ -158,24 +199,38 @@ function WishesForm({ guest, allWishes }: { guest: Guest | null, allWishes: { na
           </svg>
         </div>
         <h3 className="text-2xl font-serif text-white mb-2">Message Posted</h3>
-        <button onClick={() => setIsSent(false)} className="text-xs text-gray-400 hover:text-white uppercase tracking-widest underline">Write another</button>
+        <button onClick={() => setIsSent(false)} className="text-xs text-gray-400 hover:text-white uppercase tracking-widest underline">
+          {/* When they click this, 'wishText' state is already updated, so the box will have the new text */}
+          Edit Message
+        </button>
       </div>
     );
   }
 
+  // --- RENDER: FORM ---
   return (
     <div className="w-full max-w-md flex flex-col gap-8 h-full">
-      <form action={async (formData) => { setIsSubmitting(true); await submitWish(formData); setIsSubmitting(false); setIsSent(true); }} className="w-full flex flex-col gap-4 shrink-0 swiper-no-swiping">
+      <form action={handleOptimisticSubmit} className="w-full flex flex-col gap-4 shrink-0 swiper-no-swiping">
         <input type="hidden" name="recordId" value={guest?.recordId || ''} />
-        <textarea name="wish" className="w-full p-4 rounded bg-white/5 border border-white/20 text-white placeholder:text-gray-500 min-h-[120px] focus:outline-none focus:border-[#d4af37] transition-colors font-serif" placeholder="Leave a note for the couple..." defaultValue={initialWish} required />
+        <textarea 
+          name="wish" 
+          // 🟢 CONTROLLED INPUT: We use 'value' and 'onChange' instead of defaultValue
+          value={wishText}
+          onChange={(e) => setWishText(e.target.value)}
+          className="w-full p-4 rounded bg-white/5 border border-white/20 text-white placeholder:text-gray-500 min-h-[120px] focus:outline-none focus:border-[#d4af37] transition-colors font-serif" 
+          placeholder="Leave a note for the couple..." 
+          required 
+        />
         <button disabled={isSubmitting} className={`w-full py-4 rounded uppercase font-bold text-xs tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isSubmitting ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-[#d4af37] text-black hover:bg-white'}`}>
-          {isSubmitting ? 'Saving...' : (initialWish ? 'Update Message' : 'Post to Guestbook')}
+          {isSubmitting ? 'Saving...' : (guest.wish || wishText ? 'Update Message' : 'Post to Guestbook')}
         </button>
       </form>
+      
       <div className="flex-1 overflow-y-auto pr-2 space-y-4 text-left border-t border-white/10 pt-4 swiper-no-swiping pb-32">
         <h3 className="text-[#d4af37] text-xs uppercase tracking-widest text-center mb-4">Latest Wishes</h3>
-        {allWishes.length === 0 ? <p className="text-gray-500 text-center text-sm italic">Be the first to leave a wish!</p> : allWishes.map((w, i) => (
-            <div key={i} className="bg-black/30 p-4 rounded border border-white/10">
+        {/* 🟢 Render 'displayWishes' instead of 'allWishes' */}
+        {displayWishes.length === 0 ? <p className="text-gray-500 text-center text-sm italic">Be the first to leave a wish!</p> : displayWishes.map((w, i) => (
+            <div key={i} className={`bg-black/30 p-4 rounded border ${w.name === guest.name ? 'border-[#d4af37]/50 bg-[#d4af37]/5' : 'border-white/10'}`}>
               <p className="text-sm text-gray-200 font-serif mb-2">"{w.message}"</p>
               <p className="text-[9px] text-[#d4af37] uppercase tracking-wider text-right">- {w.name}</p>
             </div>
@@ -191,17 +246,7 @@ const getFaqs = (allowedEvents: string[], group: string, maxKids: number) => {
   const faqs = [];
 
   // --- DRESS CODE LOGIC ---
-  if (['Bridesmaids', 'Groomsmen'].includes(group)) {
-    faqs.push({ 
-      q: "What is my attire?", 
-      a: "Please refer to our group chat for your specific outfit details." 
-    });
-  } 
-  else if (group === 'Family') {
-    faqs.push({ 
-      q: "What is the family dress code?", 
-      a: "Formal attire. Please ensure you are ready for family photos 30 mins before the ceremony." 
-    });
+  if (['Bridesmaids', 'Groomsmen', 'Family'].includes(group)) {
   } 
   else {
     faqs.push({ 
